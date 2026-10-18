@@ -1,0 +1,11 @@
+{
+  "name": "career-skill-atlas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive knowledge architecture for popular computing internships.",
+  "scripts": {
+    "dev": "node scripts/serve.cjs",
+    "build:docs": "node scripts/build-docs.cjs",
+    "test": "node scripts/validate-data.cjs && node scripts/build-docs.cjs && node scripts/browser-smoke.cjs"
+  }
+}

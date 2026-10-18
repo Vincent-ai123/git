@@ -1,0 +1,4 @@
+node_modules/
+scripts/.edge-smoke/
+scripts/*.png
+*.tmp

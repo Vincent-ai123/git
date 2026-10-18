@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向计算机实习岗位的技能拆解、知识架构与交互式知识网络。">
+  <title>Career Skill Atlas · 计算机实习知识地图</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#overview" aria-label="Career Skill Atlas 首页">
+        <span class="brand-mark" aria-hidden="true">CS</span>
+        <span><strong>CAREER SKILL ATLAS</strong><small>计算机实习知识地图</small></span>
+      </a>
+      <nav class="primary-nav" aria-label="页面导航">
+        <a class="nav-link is-active" href="#overview" data-view="overview">总览</a>
+        <a class="nav-link" href="#roles" data-view="roles">岗位拆解</a>
+        <a class="nav-link" href="#network" data-view="network">知识网络</a>
+        <a class="nav-link" href="#roadmap" data-view="roadmap">学习路径</a>
+      </nav>
+      <div class="header-meta"><span class="status-dot" aria-hidden="true"></span><span>MAP EDITION · 2026.10</span></div>
+    </div>
+  </header>
+  <main id="main">
+    <section class="hero section-shell" id="overview">
+      <div class="hero-copy">
+        <p class="eyebrow">BUILD YOUR OWN COMPUTING SYSTEM</p>
+        <h1>把“想学计算机”<br><span>变成一张可走的地图。</span></h1>
+        <p class="hero-lede">按真实实习岗位拆解能力，把零散课程连接成共同底座、项目证据与方向分支。选择一个岗位，查看它需要什么、为什么需要，以及怎样证明自己会。</p>
+        <div class="hero-actions"><a class="button button-primary" href="#roles">探索岗位</a><a class="button button-ghost" href="#network">打开知识网络 <span aria-hidden="true">→</span></a></div>
+        <p class="hero-note">这是通用能力地图，不是实时职位清单，也不是逐条摘录企业招聘要求。投递前请核对目标 JD 的年级、毕业时间、专业、实习时长、到岗安排和地点限制。</p>
+      </div>
+      <div class="hero-signal" aria-label="知识地图摘要">
+        <div class="signal-orbit orbit-one"></div><div class="signal-orbit orbit-two"></div>
+        <div class="signal-core"><span class="signal-kicker">KNOWLEDGE<br>GRAPH</span><strong id="hero-role-count">15</strong><span>岗位画像</span></div>
+        <div class="signal-label label-top"><b>01</b><span>共同底座</span></div><div class="signal-label label-right"><b>02</b><span>可验证作品</span></div><div class="signal-label label-bottom"><b>03</b><span>方向分支</span></div>
+      </div>
+    </section>
+    <section class="stats-strip section-shell" aria-label="地图统计">
+      <div class="stat-item"><strong id="stat-roles">15</strong><span>常见岗位画像</span></div><div class="stat-item"><strong id="stat-skills">73</strong><span>可拆解技能节点</span></div><div class="stat-item"><strong id="stat-edges">124+</strong><span>知识关系</span></div><div class="stat-item"><strong>4</strong><span>能力层级</span></div>
+    </section>
+    <section class="section-shell explorer-section" id="roles">
+      <div class="section-heading"><div><p class="eyebrow">01 / ROLE EXPLORER</p><h2>先从岗位倒推学习顺序</h2></div><p class="section-intro">岗位不是课程清单。先看实习生会交付什么，再决定哪些知识必须深入，哪些知识只需要建立工作理解。</p></div>
+      <div class="application-note"><span class="application-icon" aria-hidden="true">i</span><span><strong>先核对资格，再准备技术。</strong> 实习招聘常把在校状态、毕业年份、连续实习周期、每周到岗天数、工作地点和专业方向列为硬条件；这些信息随公司、团队和招聘批次变化，必须以具体 JD 为准。</span></div>
+      <div class="filter-bar" role="region" aria-label="岗位筛选">
+        <label class="search-field"><span class="sr-only">搜索岗位或技能</span><span class="search-icon" aria-hidden="true">/</span><input id="global-search" type="search" placeholder="搜索岗位、技能或关键词" autocomplete="off"></label>
+        <div class="filter-chips" id="group-filters" role="group" aria-label="岗位方向"><button class="chip is-active" type="button" data-group="all" aria-pressed="true">全部岗位</button><button class="chip" type="button" data-group="software" aria-pressed="false">软件与系统</button><button class="chip" type="button" data-group="data-ai" aria-pressed="false">数据与 AI</button><button class="chip" type="button" data-group="infra" aria-pressed="false">云与基础设施</button><button class="chip" type="button" data-group="security" aria-pressed="false">安全与终端</button></div>
+      </div>
+      <div class="role-layout"><div class="role-grid" id="role-grid" aria-live="polite"></div><aside class="selection-panel" id="selection-panel" aria-live="polite"><div class="panel-kicker">SELECTION / <span id="selection-kicker">ALL ROLES</span></div><div id="selection-content"><h3>选择一个岗位</h3><p>点击岗位卡片，查看实习生常见交付、必备技能、作品证据和面试信号。也可以直接在知识网络中点击一个节点。</p><div class="panel-tip"><span class="tip-line"></span><span>建议先选一个你愿意投入 8—12 周验证的方向。</span></div></div></aside></div>
+    </section>
+    <section class="section-shell network-section" id="network">
+      <div class="section-heading"><div><p class="eyebrow">02 / KNOWLEDGE NETWORK</p><h2>看见技能之间的依赖关系</h2></div><div class="network-controls"><label for="network-layer">显示层级</label><select id="network-layer"><option value="all">全部层级</option><option value="foundation">工具与基础</option><option value="engineering">工程与系统</option><option value="data">数据与 AI</option><option value="specialization">岗位分支</option></select><button class="text-button" id="zoom-out" type="button" aria-label="缩小知识网络">−</button><button class="text-button" id="zoom-in" type="button" aria-label="放大知识网络">+</button><button class="text-button" id="reset-network" type="button">重置视图</button></div></div>
+      <div class="network-layout"><div class="network-card"><div class="network-toolbar"><span><i class="legend-dot legend-foundation"></i>基础</span><span><i class="legend-dot legend-engineering"></i>工程</span><span><i class="legend-dot legend-data"></i>数据 / AI</span><span><i class="legend-dot legend-specialization"></i>分支</span><span class="network-hint">点节点看详情 · Ctrl+滚轮缩放 · 拖动平移</span></div><div class="network-viewport" id="network-viewport"><svg id="knowledge-network" viewBox="0 0 1400 1100" role="img" aria-label="计算机实习技能知识网络"></svg></div></div><aside class="skill-detail" id="skill-detail" aria-live="polite"><div class="panel-kicker">NODE INSPECTOR</div><div id="skill-detail-content"><span class="detail-placeholder">选择一个技能节点<br>查看它在体系中的位置。</span></div></aside></div>
+    </section>
+    <section class="section-shell library-section" id="library">
+      <div class="section-heading"><div><p class="eyebrow">03 / SKILL LIBRARY</p><h2>知识节点的最小解释单元</h2></div><p class="section-intro">每个节点都给出学习目的、前置关系、练习出口和岗位关联。它们是你以后逐项追问“去哪学、怎么学”的索引。</p></div>
+      <div class="library-toolbar"><div class="layer-tabs" id="layer-tabs" role="group" aria-label="知识层级"><button class="layer-tab is-active" type="button" data-layer="all" aria-pressed="true">全部</button><button class="layer-tab" type="button" data-layer="foundation" aria-pressed="false">工具与基础</button><button class="layer-tab" type="button" data-layer="engineering" aria-pressed="false">工程与系统</button><button class="layer-tab" type="button" data-layer="data" aria-pressed="false">数据与 AI</button><button class="layer-tab" type="button" data-layer="specialization" aria-pressed="false">方向分支</button></div><div class="library-counts"><button class="progress-filter" id="progress-filter" type="button" aria-pressed="false">只看待学</button><span class="result-count" id="skill-count"></span><span class="result-count" id="progress-count"></span></div></div>
+      <div class="skill-grid" id="skill-grid"></div>
+    </section>
+    <section class="section-shell roadmap-section" id="roadmap">
+      <div class="section-heading"><div><p class="eyebrow">04 / LEARNING PATH</p><h2>一条能产出证据的主线</h2></div><p class="section-intro">先完成共同底座和一个完整作品，再把时间投向一个岗位分支。每一段都应该留下可以展示、复现和解释的结果。</p></div>
+      <div class="roadmap">
+        <article class="roadmap-step"><div class="step-index">01</div><div><span class="step-label">TOOLCHAIN</span><h3>工具层</h3><p>Shell、Git、CMake、测试、调试。目标是从干净目录稳定构建并定位问题。</p><span class="step-output">出口：可复现仓库</span></div></article>
+        <article class="roadmap-step"><div class="step-index">02</div><div><span class="step-label">CORE ENGINEERING</span><h3>通用工程层</h3><p>现代 C++ / Python、算法、Linux、并发、网络、SQL。目标是能解释机制并写出边界测试。</p><span class="step-output">出口：可测试模块</span></div></article>
+        <article class="roadmap-step"><div class="step-index">03</div><div><span class="step-label">PROOF PROJECT</span><h3>作品验证层</h3><p>用行情回放与订单簿或同等复杂度项目，把数据、系统、测试和性能连起来。</p><span class="step-output">出口：可讲述作品</span></div></article>
+        <article class="roadmap-step"><div class="step-index">04</div><div><span class="step-label">SPECIALIZE</span><h3>岗位分支层</h3><p>从 Agent、AI 系统 / GPU、量化研究、数据工程等方向中选择主修，按 JD 继续加深。</p><span class="step-output">出口：岗位匹配证据</span></div></article>
+      </div>
+    </section>
+    <section class="section-shell sources-section" id="sources"><div class="source-box"><div><p class="eyebrow">REFERENCE NOTES</p><h2>如何使用这张地图</h2><p>岗位画像用于建立准备框架，不替代目标公司的招聘公告。先用岗位卡片确定技能边界，再用知识网络找前置关系，最后为每个节点安排练习和可验证成果。外链是职业分类、学习资料和招聘搜索入口，不是当前招聘需求的逐条引用；资格以目标职位原文为准。</p><div class="doc-shortcuts"><a href="docs/ROLE_REQUIREMENTS.md">阅读 17 类岗位拆解 <span aria-hidden="true">↗</span></a><a href="docs/KNOWLEDGE_ARCHITECTURE.md">阅读知识体系说明 <span aria-hidden="true">↗</span></a></div></div><div class="source-links" id="source-links"></div></div></section>
+  </main>
+  <footer class="site-footer"><div class="footer-inner"><span>CAREER SKILL ATLAS / PERSONAL KNOWLEDGE SYSTEM</span><a href="https://github.com/Vincent-ai123/git" target="_blank" rel="noreferrer">GitHub repository ↗</a></div></footer>
+  <script src="data.js"></script><script src="app.js"></script>
+</body>
+</html>
