@@ -1,0 +1,203 @@
+{
+  "checkedAt": "2026-10-18T12:40:30.251Z",
+  "records": [
+    {
+      "id": "databricks-6866534002",
+      "source": "https://boards-api.greenhouse.io/v1/boards/databricks/jobs/6866534002",
+      "retrievedAt": "2026-10-18T12:40:26.903Z",
+      "httpStatus": 200,
+      "title": "Software Engineering Intern (2027 Start) - Amsterdam",
+      "quoteFound": true,
+      "contentSha256": "dfcb149aa1ac5cbe76c779197f3dd954567b54348149d1adb85b59b5416c962f",
+      "sourceUpdatedAt": "2026-10-02T10:39:01-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "stripe-8130883",
+      "source": "https://boards-api.greenhouse.io/v1/boards/stripe/jobs/8130883",
+      "retrievedAt": "2026-10-18T12:40:26.933Z",
+      "httpStatus": 200,
+      "title": "Software Engineer, Intern",
+      "quoteFound": true,
+      "contentSha256": "daf30c80a55e515532e89a32797fc636575ee7f2b5c536b98234151d07983643",
+      "sourceUpdatedAt": "2026-10-07T19:02:27-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "cloudflare-8199958",
+      "source": "https://boards-api.greenhouse.io/v1/boards/cloudflare/jobs/8199958",
+      "retrievedAt": "2026-10-18T12:40:26.933Z",
+      "httpStatus": 200,
+      "title": "Software Engineer Intern (2027) - Austin, TX",
+      "quoteFound": true,
+      "contentSha256": "93f2a02f6aaac35d51a73a8ccf30d362d9764089fd01402fe040e310d63a12ff",
+      "sourceUpdatedAt": "2026-10-13T20:57:01-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "datadog-8181440",
+      "source": "https://boards-api.greenhouse.io/v1/boards/datadog/jobs/8181440",
+      "retrievedAt": "2026-10-18T12:40:26.934Z",
+      "httpStatus": 200,
+      "title": "Applied Science Intern",
+      "quoteFound": true,
+      "contentSha256": "d34fe11630e928b30dc6528ceadf113f25d26d23e0a82a4e4752c012a76b8ed7",
+      "sourceUpdatedAt": "2026-09-29T13:18:57-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "stripe-8194291",
+      "source": "https://boards-api.greenhouse.io/v1/boards/stripe/jobs/8194291",
+      "retrievedAt": "2026-10-18T12:40:27.639Z",
+      "httpStatus": 200,
+      "title": "Data Analyst, Intern",
+      "quoteFound": true,
+      "contentSha256": "d548b68d0ff46e87145813e60932fe68c9efde08bbf677786ef78874717e431c",
+      "sourceUpdatedAt": "2026-10-07T19:02:27-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "databricks-7011263002",
+      "source": "https://boards-api.greenhouse.io/v1/boards/databricks/jobs/7011263002",
+      "retrievedAt": "2026-10-18T12:40:27.639Z",
+      "httpStatus": 200,
+      "title": "PhD GenAI Research Scientist Intern",
+      "quoteFound": true,
+      "contentSha256": "e27482d3b5070ac402d4e3a890a027a9d859fb0041c87849707ffcff203130d5",
+      "sourceUpdatedAt": "2026-10-09T00:21:54-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "nvidia-JR2022645",
+      "source": "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/job/China-Shanghai/Software-Engineering-Intern--NCCL---2026_JR2022645",
+      "retrievedAt": "2026-10-18T12:40:27.639Z",
+      "httpStatus": 200,
+      "title": "Software Engineering Intern, NCCL - 2026",
+      "quoteFound": true,
+      "contentSha256": "ba1c9db2618817e5204e34a0b7f4d4ec57c8f92e7e9e07633a801c3172ebc4b0",
+      "sourceUpdatedAt": null,
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "nvidia-JR2023492",
+      "source": "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/NVIDIA-2027-Internships--Systems-Software-Engineering_JR2023492",
+      "retrievedAt": "2026-10-18T12:40:27.640Z",
+      "httpStatus": 200,
+      "title": "NVIDIA 2027 Internships: Systems Software Engineering",
+      "quoteFound": true,
+      "contentSha256": "573eca49c694e9091c81ab5d0c00fdb4af4564b2eca2200a5fda702003c0f0da",
+      "sourceUpdatedAt": null,
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "nvidia-JR2023497",
+      "source": "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/NVIDIA-2027-Internships--Deep-Learning_JR2023497-1",
+      "retrievedAt": "2026-10-18T12:40:28.742Z",
+      "httpStatus": 200,
+      "title": "NVIDIA 2027 Internships: Deep Learning",
+      "quoteFound": true,
+      "contentSha256": "5d58e652a950c2d37b28c118db2bb67dde34b54246abf813a91977cef5da2faa",
+      "sourceUpdatedAt": null,
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "nvidia-JR2023499",
+      "source": "https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/NVIDIA-Spring-2027-Internships--Developer-and-Performance-Technology_JR2023499",
+      "retrievedAt": "2026-10-18T12:40:28.742Z",
+      "httpStatus": 200,
+      "title": "NVIDIA Spring 2027 Internships: Developer and Performance Technology",
+      "quoteFound": true,
+      "contentSha256": "c9cd63d8d385b2bc43d0d0acaeed52f832c0e280fa8b3e7c9db506ca74124abf",
+      "sourceUpdatedAt": null,
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "verkada-5210813007",
+      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5210813007",
+      "retrievedAt": "2026-10-18T12:40:28.742Z",
+      "httpStatus": 200,
+      "title": "Backend Software Engineering Intern 2027",
+      "quoteFound": true,
+      "contentSha256": "47b61798726143b088b4d61ad1ac9471a6ffc5287c2f1faf4a126aef3ee70d9a",
+      "sourceUpdatedAt": "2026-09-28T18:36:46-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "verkada-5210942007",
+      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5210942007",
+      "retrievedAt": "2026-10-18T12:40:28.743Z",
+      "httpStatus": 200,
+      "title": "Frontend Software Engineering Intern 2027",
+      "quoteFound": true,
+      "contentSha256": "2024346bcc913b35c5f605b3d526ead04c6bfd0e11e07e7034ff36ad3ff3ac2d",
+      "sourceUpdatedAt": "2026-09-28T18:36:46-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "verkada-5219131007",
+      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5219131007",
+      "retrievedAt": "2026-10-18T12:40:29.522Z",
+      "httpStatus": 200,
+      "title": "Mobile Software Engineering Intern 2027",
+      "quoteFound": true,
+      "contentSha256": "083cf31307b0de4314c4c52747f672c4316471bf775b250802b976b3cda56f69",
+      "sourceUpdatedAt": "2026-10-07T18:04:53-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "verkada-5211595007",
+      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5211595007",
+      "retrievedAt": "2026-10-18T12:40:29.522Z",
+      "httpStatus": 200,
+      "title": "Embedded Software Engineering Intern 2027",
+      "quoteFound": true,
+      "contentSha256": "291d88d38b83ceac45560d28d08360122e5d5a56c4a3a83b3203f7c4d76999f0",
+      "sourceUpdatedAt": "2026-10-07T17:50:34-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "verkada-5213881007",
+      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5213881007",
+      "retrievedAt": "2026-10-18T12:40:29.522Z",
+      "httpStatus": 200,
+      "title": "Security Software Engineering Intern 2027",
+      "quoteFound": true,
+      "contentSha256": "47b61798726143b088b4d61ad1ac9471a6ffc5287c2f1faf4a126aef3ee70d9a",
+      "sourceUpdatedAt": "2026-10-05T21:40:51-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "janestreet-8625946002",
+      "source": "https://boards-api.greenhouse.io/v1/boards/janestreet/jobs/8625946002",
+      "retrievedAt": "2026-10-18T12:40:29.522Z",
+      "httpStatus": 200,
+      "title": "Linux Engineer",
+      "quoteFound": true,
+      "contentSha256": "009e1ea6d98c6380afb97374548671a60d7c7477f787b94930c551d6ad2287a4",
+      "sourceUpdatedAt": "2026-10-17T09:23:57-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "janestreet-8617298002",
+      "source": "https://boards-api.greenhouse.io/v1/boards/janestreet/jobs/8617298002",
+      "retrievedAt": "2026-10-18T12:40:29.784Z",
+      "httpStatus": 200,
+      "title": "Software Engineer",
+      "quoteFound": true,
+      "contentSha256": "70f4549f5d2ddda3f1281e4330957ea555ead760b6e81f1f652fe9829e96eade",
+      "sourceUpdatedAt": "2026-10-17T09:23:57-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    },
+    {
+      "id": "janestreet-8623868002",
+      "source": "https://boards-api.greenhouse.io/v1/boards/janestreet/jobs/8623868002",
+      "retrievedAt": "2026-10-18T12:40:29.785Z",
+      "httpStatus": 200,
+      "title": "Quantitative Researcher",
+      "quoteFound": true,
+      "contentSha256": "4da5de1aebfe92a0c0901cb195cde3f809f185506ff3a2c6fd66ff64c3eb62c2",
+      "sourceUpdatedAt": "2026-10-17T09:23:57-04:00",
+      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
+    }
+  ]
+}
