@@ -136,3 +136,82 @@ button:disabled{cursor:default;opacity:.5}
 @media(max-width:760px){.selection-panel,.skill-detail{position:static;max-height:none;overflow:visible}.skill-detail{min-height:0}.network-viewport{height:480px}.network-list{max-height:580px;padding:12px}.network-view-bar p{width:100%;margin-left:0}.graph-pan>span:last-child{width:100%;margin-left:0}.path-toolbar label,.path-choices{width:100%}.path-toolbar select,.evidence-toolbar select{width:100%}.evidence-toolbar label{width:100%}.evidence-section{padding-top:76px}.jd-library{grid-template-columns:1fr}.jd-card summary strong{font-size:15px}.progress-tools>span{width:100%}}
 @media(max-width:560px){.role-roadmap{grid-template-columns:1fr}.path-stage{padding:22px}.network-view-bar{align-items:stretch}.view-switch{width:100%}.view-switch button{flex:1}.network-view-bar>.progress-filter{width:100%;min-height:44px}.path-chain button{padding:10px 6px}.path-chain small{font-size:11px}.stat-item span{font-size:10px}}
 @media(max-width:760px){.hero h1{font-size:clamp(30px,8.7vw,44px)}section[id]{scroll-margin-top:112px}.network-controls{flex-wrap:wrap}.network-controls select,.text-button{min-height:44px}.text-button{min-width:44px}}
+
+/* Focused routes and a hierarchy projected onto a compact 3D sphere. */
+.role-priority{display:inline-flex;align-self:flex-start;margin:12px 0 3px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;color:#c4d4ea;font-size:11px;line-height:1.5}
+.role-card .role-title{margin-top:7px}
+.map-navigation{display:flex;align-items:center;gap:16px;margin:17px 0;min-width:0}
+.map-back{flex:none;min-height:44px;padding:8px 12px}
+#network-breadcrumbs{min-width:0}
+#network-breadcrumbs ol{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:0;padding:0;list-style:none}
+#network-breadcrumbs li{display:flex;align-items:center;min-width:0}
+#network-breadcrumbs li+li:before{content:'/';margin:0 7px;color:#748ca7}
+#network-breadcrumbs button{min-height:44px;padding:8px 5px;background:none;border:0;color:#a7c5ed;font-size:13px;text-align:left;overflow-wrap:anywhere}
+#network-breadcrumbs button:hover{color:#fff}
+#network-breadcrumbs [aria-current=page]{color:#eff5ff}
+.network-layout{grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+.network-card{background:linear-gradient(145deg,#0d2036,#0a1728 75%);border-radius:12px;position:relative}
+.map-heading{display:flex;align-items:flex-start;gap:16px;justify-content:space-between;padding:26px 28px 18px}
+.map-heading .eyebrow{margin-bottom:10px;font-size:11px}
+.map-heading h3{font-size:24px;font-weight:500;line-height:1.35;margin:0;color:#edf4ff;text-wrap:balance}
+.map-heading>div{min-width:0}
+.map-heading>div>p:last-child{font-size:13px;line-height:1.7;max-width:57ch;color:#b1c4dc;margin:10px 0 0}
+.sphere-edition{flex:none;font:10px/1.8 'Fira Code',monospace;color:#879fba;letter-spacing:.12em;text-align:right;padding-top:2px}
+.network-toolbar{min-height:56px;border-top:1px solid var(--border);border-bottom:0;padding:10px 28px;gap:10px;flex-wrap:wrap;font-size:12px}
+.network-toolbar .progress-filter{margin-left:auto;min-height:36px;padding:6px 10px;font-size:12px}
+.sphere-indicator{width:7px;height:7px;background:#7baff9;border-radius:50%;box-shadow:0 0 12px #4f86f7}
+.network-viewport{height:560px;max-height:75dvh;min-height:360px;overflow:hidden;touch-action:pan-y;position:relative;background:radial-gradient(ellipse at 50% 44%,#122b4944,transparent 70%);isolation:isolate}
+.network-viewport svg{width:100%;height:100%;max-width:100%;outline-offset:-4px}
+.sphere-wire{fill:none;stroke:#5582af;stroke-width:.8;opacity:.28;pointer-events:none}
+.sphere-wire path:nth-child(2n){stroke-dasharray:3 7px;opacity:.65}
+.sphere-edges{pointer-events:none}
+.network-edge.sphere-edge{stroke:#8bb0db;stroke-width:1;fill:none}
+.sphere-node{cursor:pointer;outline:none}
+.sphere-node-halo{opacity:.1}
+.sphere-dot{stroke:#dfedff;stroke-width:1.2}
+.sphere-label-leader{fill:none;stroke:var(--node-color);stroke-width:1;opacity:.45;pointer-events:none}
+.sphere-label-bg{fill:#0f2239;fill-opacity:.96;stroke:#7892ad;stroke-opacity:.35;stroke-width:1;transition:fill .16s ease,stroke-opacity .16s ease}
+.sphere-label{fill:#f0f5fc;font-family:'Fira Sans',system-ui,'Microsoft YaHei',sans-serif;font-weight:500;pointer-events:none}
+.sphere-node-meta{fill:#b6cae2;font-family:'Fira Sans',system-ui,'Microsoft YaHei',sans-serif;font-size:10px;pointer-events:none}
+.sphere-node.is-behind .sphere-dot{stroke-opacity:.6}
+.sphere-node.is-behind .sphere-label-bg{fill:#0c1c30}
+.sphere-node:hover .sphere-label-bg,.sphere-node:focus .sphere-label-bg,.sphere-node.is-focused .sphere-label-bg{fill:#1e3957;stroke:var(--node-color);stroke-opacity:1;stroke-width:2}
+.sphere-node:focus .sphere-node-halo,.sphere-node:hover .sphere-node-halo{opacity:.3}
+.sphere-node.is-proven .sphere-label-bg{stroke:#63d7b5;stroke-opacity:1}
+.graph-pan{gap:8px;padding:13px 20px;border-top:1px solid var(--border);justify-content:center}
+.graph-pan>span{font-size:12px;margin-right:4px}
+.graph-pan .reset-camera{width:auto;padding:0 12px}
+.network-controls{padding:12px 20px;border-top:1px solid var(--border);flex-wrap:wrap;margin:0;justify-content:flex-start;font-size:12px;gap:12px}
+.network-controls select{min-height:44px;font-size:12px;padding:8px}
+.network-controls .text-button{margin-left:auto;min-height:44px;padding:8px 12px}
+.network-empty{padding:0 24px 24px;text-align:center;color:var(--muted)}
+.network-list{max-height:560px;min-height:360px;padding:16px 24px;border-top:1px solid var(--border)}
+.network-list .adjacency-items{display:grid;grid-template-columns:1fr;gap:12px}
+.network-list .adjacency-items>li{padding:16px;border:1px solid var(--border);border-radius:8px;background:#102339}
+.network-list .adjacency-items>li>p{color:var(--muted);font-size:13px;margin:8px 0;line-height:1.7}
+.adjacency-title{width:100%;min-height:44px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left}
+.adjacency-title small{flex-shrink:0;font-size:11px}
+.skill-detail{min-height:420px;padding:24px;top:96px;border-radius:12px;scroll-margin-top:130px}
+.skill-detail h3{font-size:22px;line-height:1.45}
+.detail-location{font-size:11px;color:var(--muted);line-height:1.8;margin-top:-4px}
+.inspector-step{font:11px 'Fira Code',monospace;color:#83aff3;margin:8px 0 16px;letter-spacing:.07em}
+.map-stage{font-size:12px;color:#a7c7ec;line-height:1.8;border-left:2px solid #4f86f7;padding:9px 12px;background:#132944;margin:18px 0}
+.map-children{display:grid;gap:8px;margin:20px 0}
+.map-child{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;width:100%;min-height:58px;padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:#12263d;color:#e4effd;text-align:left;transition:background .16s ease}
+.map-child:hover{background:#203d5d;border-color:#638ab5}
+.map-child>span{font-size:14px;line-height:1.6}
+.map-child>small{font-size:11px;color:#acbfd8;grid-column:1}
+.map-child>b{grid-row:1/3;grid-column:2;font-weight:400;color:#85b2ed}
+.topic-focus{padding:12px;border:1px solid #688fbe;background:#173454;color:#e5f1ff;font-size:14px;border-radius:6px}
+.topic-list li{padding:5px 4px}
+.topic-list .is-current-topic{color:#f1f7ff;background:#25496b;border-radius:4px}
+.skill-library-details{border:1px solid var(--border);border-radius:10px;padding:0 22px 24px;background:#0d1c2e}
+.skill-library-details:not([open]){padding-bottom:0}
+.skill-library-details>summary{min-height:64px;padding:20px 0;font-size:15px;color:#c9ddf7}
+.skill-library-details .library-toolbar{margin-top:12px}
+.skill-library-details .skill-grid{margin-top:18px}
+.graph-description{margin-top:18px;font-size:12px;max-width:110ch;line-height:1.8}
+@media(max-width:1100px){.network-layout{grid-template-columns:minmax(0,1fr) 285px}.map-heading{padding:22px}.network-toolbar{padding:10px 22px}.sphere-edition{display:none}.network-viewport{height:530px}.skill-detail{padding:20px}}
+@media(max-width:900px){.network-layout{grid-template-columns:1fr}.skill-detail{position:static;max-height:none;overflow:visible;min-height:0}.map-children{grid-template-columns:repeat(2,minmax(0,1fr))}.network-viewport{height:530px}.graph-description{max-width:none}}
+@media(max-width:760px){.map-navigation{display:block}.map-back{margin-bottom:6px}.network-viewport{height:450px;min-height:400px;max-height:none}.map-heading{padding:20px 18px 14px}.map-heading h3{font-size:21px}.network-toolbar{padding:10px 18px;font-size:11px}.network-toolbar .progress-filter{font-size:11px;min-height:44px}.network-controls{padding:12px}.network-controls label{font-size:11px}.network-controls .text-button{font-size:11px;margin-left:0}.graph-pan{padding:12px 8px;gap:8px}.graph-pan>span{display:none}.graph-pan>span:last-child{width:auto;margin:0}.graph-pan button{width:40px;min-height:44px}.graph-pan .reset-camera{padding:0 10px}#network-breadcrumbs button{font-size:12px}.network-list{padding:12px;max-height:550px}.adjacency-title{display:block}.adjacency-title small{display:block;margin-top:5px}.skill-library-details{padding-left:14px;padding-right:14px}.skill-library-details>summary{font-size:14px}.map-children{grid-template-columns:1fr}.skill-detail{padding:21px}.network-view-bar p{font-size:12px;line-height:1.7}.network-view-bar .view-switch{width:100%}.network-view-bar .view-switch button{min-height:44px}.network-view-bar{gap:10px}}
+@media(prefers-reduced-motion:reduce){.sphere-node *{transition:none}}

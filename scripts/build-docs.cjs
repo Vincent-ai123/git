@@ -40,13 +40,21 @@ for (const role of data.roles) {
 roleDoc.push("## 继续使用这份体系","","完整知识点与双向依赖见 [SKILL_NETWORK.md](SKILL_NETWORK.md)；分层与关系语义见 [KNOWLEDGE_ARCHITECTURE.md](KNOWLEDGE_ARCHITECTURE.md)；逐条招聘证据见 [JD_EVIDENCE.md](JD_EVIDENCE.md)。");
 write("ROLE_REQUIREMENTS.md",roleDoc);
 
-const networkDoc=["# 计算机知识点与依赖网络","","> 版本："+data.updated+"。"+data.skills.length+" 个节点、"+data.skills.reduce((n,s)=>n+s.prerequisites.length,0)+" 条显式前置关系。","",
-  "每个节点是学习索引，包含范围、具体知识点、学习理由、先修关系、后续用途与验证成果。箭头表示建议先建立的概念或实践基础，不表示岗位招聘硬门槛。关联岗位包含直接使用与前置复用。","",
-  "## 节点索引","","| ID | 知识节点 | 层级 | 直接前置项 |","|---|---|---|---|",
-  ...data.skills.map((s)=>"| "+s.id+" | ["+s.title+"](#"+s.id+") | "+data.layers[s.layer].label+" | "+(names(s.prerequisites).join("、")||"起点")+" |"),"","## 逐节点知识架构",""
+const modules=data.domains.flatMap(domain=>domain.modules);
+const domainById=Object.fromEntries(data.domains.map(domain=>[domain.id,domain]));
+const moduleById=Object.fromEntries(modules.map(module=>[module.id,module]));
+const networkDoc=["# 分层计算机知识地图与依赖网络","","> 版本："+data.updated+"。"+data.domains.length+" 个大概念、"+modules.length+" 个模块、"+data.skills.length+" 个技能、"+data.skills.reduce((n,s)=>n+s.topics.length,0)+" 项具体学习内容、"+data.skills.reduce((n,s)=>n+s.prerequisites.length,0)+" 条显式前置关系。","",
+  "按两份 2026-10-17 学习路线组织。网站先展示大概念，再按“概念 → 模块 → 技能 → 具体学习内容”逐层展开；无需在一个画面中读完全部技能。","",
+  "每个技能包含范围、具体内容、学习理由、先修关系、后续用途与验证成果。箭头表示建议先建立的概念或实践基础，不表示岗位招聘硬门槛。关联岗位包含直接使用与前置复用。","","## 大概念与模块索引",""
 ];
+for(const domain of data.domains) {
+  networkDoc.push("### "+domain.title,"",domain.stage+"。"+domain.summary,"","| 模块 | 技能入口 |","|---|---|",
+    ...domain.modules.map(module=>"| "+module.title+" | "+module.skillIds.map(id=>"["+byId[id].title+"](#"+id+")").join("、")+" |"),"");
+}
+networkDoc.push("## 技能索引","","| ID | 技能 | 所属概念 / 模块 | 直接前置项 |","|---|---|---|---|",
+  ...data.skills.map(s=>"| "+s.id+" | ["+s.title+"](#"+s.id+") | "+domainById[s.domainId].title+" / "+moduleById[s.moduleId].title+" | "+(names(s.prerequisites).join("、")||"起点")+" |"),"","## 逐技能知识架构","");
 for(const s of data.skills){
-  networkDoc.push('<a id="'+s.id+'"></a>',"","### "+s.title,"","**位置：** "+data.layers[s.layer].label+" / "+s.family,"",s.summary,"","**为什么学：** "+s.why,"","**具体知识点**","",bullets(s.topics),"",
+  networkDoc.push('<a id="'+s.id+'"></a>',"","### "+s.title,"","**位置：** "+domainById[s.domainId].title+" → "+moduleById[s.moduleId].title+" → "+s.title,"","**知识分类：** "+data.layers[s.layer].label+" / "+s.family,"",s.summary,"","**为什么学：** "+s.why,"","**具体知识点**","",bullets(s.topics),"",
     "**前置：** "+(names(s.prerequisites).join("、")||"起点节点，可从基础概念开始。"),"",
     "**后续用途：** "+(data.skills.filter((item)=>item.prerequisites.includes(s.id)).map((item)=>item.title).join("、")||"在相关岗位项目中继续验证与深化。"),"",
     "**关联岗位（含前置复用）：** "+s.roleIds.map((id)=>roleById[id].title).join("、"),"","**验证成果：** "+s.proof,"");
@@ -63,8 +71,8 @@ for(const jd of data.jdEvidence){
   evidenceDoc.push('<a id="'+jd.id+'"></a>',"","## "+jd.company+" · "+jd.title,"",
     "- 地点："+jd.location,"- 核查："+jd.checked,"- 状态："+statusLabels[jd.status],"- [官方职位原文]("+jd.url+")","- [官方公开数据源]("+jd.sourceApiUrl+")","",
     "**归属与适用范围：** "+jd.note,"","**JD 明示资格与时间**","",bullets(jd.eligibility),"",
-    "**JD 明示技能与职责（原文归纳）**","",bullets(jd.required.map((r)=>r.text+"。对应节点："+names(r.skillIds).join("、"))),"",
-    "**JD 明示加分项（原文归纳）**","",jd.preferred.length?bullets(jd.preferred.map((r)=>r.text+"。对应节点："+names(r.skillIds).join("、"))):"本记录未单独提取加分段落，不代表公司没有其他考量。","",
+    "**JD 明示技能与职责（原文归纳）**","",bullets(jd.required.map((r)=>r.text+"。"+(r.skillIds.length?"对应节点："+names(r.skillIds).join("、"):"此项不在当前学习路线内展开。"))),"",
+    "**JD 明示加分项（原文归纳）**","",jd.preferred.length?bullets(jd.preferred.map((r)=>r.text+"。"+(r.skillIds.length?"对应节点："+names(r.skillIds).join("、"):"此项不在当前学习路线内展开。"))):"本记录未单独提取加分段落，不代表公司没有其他考量。","",
     "**原文短摘**","","> "+jd.quote,"","**知识映射关联方向：** "+jd.roleIds.map((id)=>roleById[id].title).join("、"),"");
 }
 evidenceDoc.push("## 复核记录","","运行 `npm run check:sources` 可重新检查官方公开数据源是否可读取，以及短摘是否仍存在。结果保存在 [EVIDENCE_STATUS.json](EVIDENCE_STATUS.json)，包含访问时间、原始标题和内容摘要指纹。该检查不自动修改资格归纳，也不判断岗位一定开放；原文变化需要人工重新审读。","","职业词典、趋势背景、技术资料和公司搜索入口见 [README.md](../README.md)，它们不替代逐职位证据。");

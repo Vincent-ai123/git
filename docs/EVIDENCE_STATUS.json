@@ -35,28 +35,6 @@
       "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
     },
     {
-      "id": "datadog-8181440",
-      "source": "https://boards-api.greenhouse.io/v1/boards/datadog/jobs/8181440",
-      "retrievedAt": "2026-10-18T12:40:26.934Z",
-      "httpStatus": 200,
-      "title": "Applied Science Intern",
-      "quoteFound": true,
-      "contentSha256": "d34fe11630e928b30dc6528ceadf113f25d26d23e0a82a4e4752c012a76b8ed7",
-      "sourceUpdatedAt": "2026-09-29T13:18:57-04:00",
-      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
-    },
-    {
-      "id": "stripe-8194291",
-      "source": "https://boards-api.greenhouse.io/v1/boards/stripe/jobs/8194291",
-      "retrievedAt": "2026-10-18T12:40:27.639Z",
-      "httpStatus": 200,
-      "title": "Data Analyst, Intern",
-      "quoteFound": true,
-      "contentSha256": "d548b68d0ff46e87145813e60932fe68c9efde08bbf677786ef78874717e431c",
-      "sourceUpdatedAt": "2026-10-07T19:02:27-04:00",
-      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
-    },
-    {
       "id": "databricks-7011263002",
       "source": "https://boards-api.greenhouse.io/v1/boards/databricks/jobs/7011263002",
       "retrievedAt": "2026-10-18T12:40:27.639Z",
@@ -120,50 +98,6 @@
       "quoteFound": true,
       "contentSha256": "47b61798726143b088b4d61ad1ac9471a6ffc5287c2f1faf4a126aef3ee70d9a",
       "sourceUpdatedAt": "2026-09-28T18:36:46-04:00",
-      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
-    },
-    {
-      "id": "verkada-5210942007",
-      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5210942007",
-      "retrievedAt": "2026-10-18T12:40:28.743Z",
-      "httpStatus": 200,
-      "title": "Frontend Software Engineering Intern 2027",
-      "quoteFound": true,
-      "contentSha256": "2024346bcc913b35c5f605b3d526ead04c6bfd0e11e07e7034ff36ad3ff3ac2d",
-      "sourceUpdatedAt": "2026-09-28T18:36:46-04:00",
-      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
-    },
-    {
-      "id": "verkada-5219131007",
-      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5219131007",
-      "retrievedAt": "2026-10-18T12:40:29.522Z",
-      "httpStatus": 200,
-      "title": "Mobile Software Engineering Intern 2027",
-      "quoteFound": true,
-      "contentSha256": "083cf31307b0de4314c4c52747f672c4316471bf775b250802b976b3cda56f69",
-      "sourceUpdatedAt": "2026-10-07T18:04:53-04:00",
-      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
-    },
-    {
-      "id": "verkada-5211595007",
-      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5211595007",
-      "retrievedAt": "2026-10-18T12:40:29.522Z",
-      "httpStatus": 200,
-      "title": "Embedded Software Engineering Intern 2027",
-      "quoteFound": true,
-      "contentSha256": "291d88d38b83ceac45560d28d08360122e5d5a56c4a3a83b3203f7c4d76999f0",
-      "sourceUpdatedAt": "2026-10-07T17:50:34-04:00",
-      "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
-    },
-    {
-      "id": "verkada-5213881007",
-      "source": "https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5213881007",
-      "retrievedAt": "2026-10-18T12:40:29.522Z",
-      "httpStatus": 200,
-      "title": "Security Software Engineering Intern 2027",
-      "quoteFound": true,
-      "contentSha256": "47b61798726143b088b4d61ad1ac9471a6ffc5287c2f1faf4a126aef3ee70d9a",
-      "sourceUpdatedAt": "2026-10-05T21:40:51-04:00",
       "interpretation": "Source availability and excerpt check only; not a hiring-open confirmation."
     },
     {

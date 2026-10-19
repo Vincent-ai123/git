@@ -1,6 +1,6 @@
 # 官方实习 JD 样例与证据边界
 
-> 核查日期：2026-10-18。共 18 份官方职位样例。
+> 核查日期：2026-10-19。共 12 份官方职位样例。
 
 这些记录来自企业官方招聘系统，以短摘和中文归纳展示要求。原文可读取不等于目前一定可投递；2026 批次、方向汇总与相邻岗位分别标注。没有招聘数量统计，不能据此计算岗位热度、薪资排序或中国市场的统一门槛。
 
@@ -40,7 +40,7 @@
 
 > You have good knowledge of algorithms, data structures, and OOP principles
 
-**知识映射关联方向：** 后端开发实习生、全栈开发实习生、C++ / 系统软件实习生
+**知识映射关联方向：** 通用后端与数据平台、C++ 系统与量化开发
 
 <a id="stripe-8130883"></a>
 
@@ -61,7 +61,7 @@
 
 **JD 明示技能与职责（原文归纳）**
 
-- 编程与计算机基础；团队使用 Ruby、Java、JavaScript、Go、Scala，强调语言可学习。对应节点：程序设计基础、Java、JavaScript / TypeScript、Go
+- 编程与计算机基础；团队使用 Ruby、Java、JavaScript、Go、Scala，强调语言可学习。对应节点：程序设计基础、Java、Go
 - 理解陌生系统，参与代码评审与反馈；使用 AI 工具时能批判审查、修正并验证输出。对应节点：工程协作与技术表达、Git 版本管理、测试设计
 
 **JD 明示加分项（原文归纳）**
@@ -72,7 +72,7 @@
 
 > We believe new programming languages can be learned if the fundamentals and general knowledge are present.
 
-**知识映射关联方向：** 后端开发实习生、全栈开发实习生、前端开发实习生
+**知识映射关联方向：** 通用后端与数据平台、金融科技后端
 
 <a id="cloudflare-8199958"></a>
 
@@ -94,7 +94,7 @@
 **JD 明示技能与职责（原文归纳）**
 
 - 交付项目、跨团队协作并进行最终展示；具备批判思考与快速学习能力。对应节点：工程协作与技术表达、系统设计与可维护性
-- 原文技术背景列出 TypeScript/JavaScript、Go、Rust、C/C++、Python，未要求全部掌握。对应节点：JavaScript / TypeScript、Go、C 语言与内存基础、现代 C++、Python
+- 原文技术背景列出 TypeScript/JavaScript、Go、Rust、C/C++、Python，未要求全部掌握。对应节点：Go、C 语言与内存基础、现代 C++、Python
 
 **JD 明示加分项（原文归纳）**
 
@@ -104,71 +104,7 @@
 
 > Ship and deliver projects over 12-14 weeks with autonomy and support.
 
-**知识映射关联方向：** 后端开发实习生、全栈开发实习生、云平台 / DevOps / SRE 实习生
-
-<a id="datadog-8181440"></a>
-
-## Datadog · Applied Science Intern
-
-- 地点：Paris, France
-- 核查：2026-10-18
-- 状态：核查日原文可读取；投递前复核
-- [官方职位原文](https://careers.datadoghq.com/detail/8181440/?gh_jid=8181440)
-- [官方公开数据源](https://boards-api.greenhouse.io/v1/boards/datadog/jobs/8181440)
-
-**归属与适用范围：** 应用科学岗位不等于全部算法岗位；实习时间窗口是该条 JD 的具体限制。
-
-**JD 明示资格与时间**
-
-- 2027 年毕业；机器学习、AI、统计、计算机或相关专业
-- 连续 6 个月；开始时间仅限 2027 年 2、3、4、5 或 6 月；英文简历
-
-**JD 明示技能与职责（原文归纳）**
-
-- 通过课程、研究、实习或个人项目有机器学习建模经历与较强编程能力。对应节点：机器学习、程序设计基础
-- 参与模型评估、AI 系统部署监控，并能向不同背景受众解释复杂概念。对应节点：模型评估与实验、模型服务与 MLOps、工程协作与技术表达
-
-**JD 明示加分项（原文归纳）**
-
-本记录未单独提取加分段落，不代表公司没有其他考量。
-
-**原文短摘**
-
-> You have experience building machine learning models through coursework, research, internships, or personal projects
-
-**知识映射关联方向：** 机器学习工程实习生、算法 / 机器学习算法实习生
-
-<a id="stripe-8194291"></a>
-
-## Stripe · Data Analyst, Intern
-
-- 地点：New York / Seattle / South San Francisco, US
-- 核查：2026-10-18
-- 状态：核查日原文可读取；投递前复核
-- [官方职位原文](https://stripe.com/jobs/search?gh_jid=8194291)
-- [官方公开数据源](https://boards-api.greenhouse.io/v1/boards/stripe/jobs/8194291)
-
-**归属与适用范围：** 数据分析直接样例；数据工程是相邻职责参考，原文中的管道经验属于加分项。
-
-**JD 明示资格与时间**
-
-- 定量相关本科/硕士在读，如分析、统计、经济、数学
-- 预计 2027 年 12 月或 2028 年春/夏毕业
-
-**JD 明示技能与职责（原文归纳）**
-
-- 有 SQL 经验，能用 AI 工具加快模型、分析和编码，并与多学科团队沟通。对应节点：SQL 与关系数据、分析与可视化、工程协作与技术表达
-- 职责覆盖指标、数据资产、看板、分析建议及 A/B 测试。对应节点：数据建模、数据可视化、概率统计、分析与可视化
-
-**JD 明示加分项（原文归纳）**
-
-- 编写与调试数据管道、多人项目反馈经历，以及学习陌生系统的能力。对应节点：ETL 与数据管道、调试与故障定位、工程协作与技术表达
-
-**原文短摘**
-
-> Experience with SQL
-
-**知识映射关联方向：** 数据分析 / BI 实习生、数据工程实习生
+**知识映射关联方向：** 通用后端与数据平台
 
 <a id="databricks-7011263002"></a>
 
@@ -189,7 +125,7 @@
 
 **JD 明示技能与职责（原文归纳）**
 
-- 有深度学习研究经验，具备软件工程和 PyTorch 实现能力。对应节点：深度学习、算法建模与论文复现、PyTorch
+- 有深度学习研究经验，具备软件工程和 PyTorch 实现能力。对应节点：深度学习、实验复现与研究表达、PyTorch
 - 研究职责包括领域适配、文献方法改进、LLM/AI 系统评测、检索增强和高效推理。对应节点：大语言模型基础、RAG 与信息检索、LLM 评测与安全、模型评估与实验
 
 **JD 明示加分项（原文归纳）**
@@ -200,7 +136,7 @@
 
 > Research experience in and proficiency with the fundamentals of deep learning.
 
-**知识映射关联方向：** 算法 / 机器学习算法实习生、AI 应用 / Agent 实习生
+**知识映射关联方向：** AI 应用 / Agent / RAG
 
 <a id="nvidia-JR2022645"></a>
 
@@ -232,7 +168,7 @@
 
 > Excellent C/C++ programming and debugging skills.
 
-**知识映射关联方向：** C++ / 系统软件实习生、AI 基础设施 / GPU 系统实习生
+**知识映射关联方向：** C++ 系统与量化开发、AI 基础设施 / GPU 系统
 
 <a id="nvidia-JR2023492"></a>
 
@@ -244,7 +180,7 @@
 - [官方职位原文](https://nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/NVIDIA-2027-Internships--Systems-Software-Engineering_JR2023492)
 - [官方公开数据源](https://nvidia.wd5.myworkdayjobs.com/wday/cxs/nvidia/NVIDIAExternalCareerSite/job/US-CA-Santa-Clara/NVIDIA-2027-Internships--Systems-Software-Engineering_JR2023492)
 
-**归属与适用范围：** 原文明确按岗位列举可能技术；不是要求一个人掌握整个列表。
+**归属与适用范围：** 原文明确按岗位列举可能技术；不是要求一个人掌握整个列表。 本路线仅展开系统与 GPU 相关知识，原文中的嵌入式方向不再作为岗位入口。
 
 **JD 明示资格与时间**
 
@@ -253,7 +189,7 @@
 
 **JD 明示技能与职责（原文归纳）**
 
-- 依具体岗位可能涉及 C/C++、Linux、OS、体系结构、网络、多线程或嵌入式开发。对应节点：C 语言与内存基础、现代 C++、Linux、操作系统、计算机组成与体系结构、计算机网络、并发与同步、嵌入式 C/C++
+- 依具体岗位可能涉及 C/C++、Linux、OS、体系结构、网络、多线程或嵌入式开发。对应节点：C 语言与内存基础、现代 C++、Linux、操作系统、计算机组成与体系结构、计算机网络、并发与同步
 
 **JD 明示加分项（原文归纳）**
 
@@ -263,7 +199,7 @@
 
 > Depending on the internship role, prior experience or knowledge requirements could include
 
-**知识映射关联方向：** C++ / 系统软件实习生、嵌入式 / IoT 实习生、AI 基础设施 / GPU 系统实习生
+**知识映射关联方向：** C++ 系统与量化开发、AI 基础设施 / GPU 系统
 
 <a id="nvidia-JR2023497"></a>
 
@@ -295,7 +231,7 @@
 
 > Depending on the internship role, prior experience or knowledge requirements could include
 
-**知识映射关联方向：** 机器学习工程实习生、算法 / 机器学习算法实习生、AI 基础设施 / GPU 系统实习生
+**知识映射关联方向：** AI 基础设施 / GPU 系统
 
 <a id="nvidia-JR2023499"></a>
 
@@ -327,7 +263,7 @@
 
 > Developer and Performance Internship Preferred Start Dates: February 2027 or May 2027
 
-**知识映射关联方向：** 测试开发 / 质量工程实习生、AI 基础设施 / GPU 系统实习生
+**知识映射关联方向：** AI 基础设施 / GPU 系统
 
 <a id="verkada-5210813007"></a>
 
@@ -358,134 +294,7 @@
 
 > Familiar with: Python or Golang, Distributed Systems, Operating Systems, AWS, Docker, etc
 
-**知识映射关联方向：** 后端开发实习生
-
-<a id="verkada-5210942007"></a>
-
-## Verkada · Frontend Software Engineering Intern 2027
-
-- 地点：San Mateo, CA, US · 现场
-- 核查：2026-10-18
-- 状态：核查日原文可读取；投递前复核
-- [官方职位原文](https://job-boards.greenhouse.io/verkada/jobs/5210942007)
-- [官方公开数据源](https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5210942007)
-
-**归属与适用范围：** 原文接受多种框架；地图用统一框架节点承载公共概念，并不要求同时学习三种框架。
-
-**JD 明示资格与时间**
-
-- 计算机或类似技术专业本科/硕士在读；2028 年 6 月前毕业
-- 能参加总部 2027 冬季或夏季实习；有开发上线产品的实习经历
-
-**JD 明示技能与职责（原文归纳）**
-
-- JavaScript 或 TypeScript，理解上下文、原型/类、闭包；有现代框架经验，如 Angular、React 或 Vue。对应节点：JavaScript / TypeScript、前端框架与状态管理
-- 可复用组件、CSS 预处理、精细界面实现与设计细节。对应节点：HTML、CSS 与浏览器、前端框架与状态管理
-
-**JD 明示加分项（原文归纳）**
-
-本记录未单独提取加分段落，不代表公司没有其他考量。
-
-**原文短摘**
-
-> Experience working with a modern web framework such as Angular.js, React or Vue
-
-**知识映射关联方向：** 前端开发实习生
-
-<a id="verkada-5219131007"></a>
-
-## Verkada · Mobile Software Engineering Intern 2027
-
-- 地点：San Mateo, CA, US · 现场
-- 核查：2026-10-18
-- 状态：核查日原文可读取；投递前复核
-- [官方职位原文](https://job-boards.greenhouse.io/verkada/jobs/5219131007)
-- [官方公开数据源](https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5219131007)
-
-**归属与适用范围：** 平台是 OR 关系；学习路径允许切换 Android 和 iOS，依赖关系随之重算。
-
-**JD 明示资格与时间**
-
-- 计算机或类似专业本科在读，预计 2028 年早期至年中毕业
-- 可参加总部 2027 冬季或夏季实习
-
-**JD 明示技能与职责（原文归纳）**
-
-- Swift/iOS SDK 或 Kotlin/Android SDK，并愿意学习另一平台。对应节点：iOS / Swift 基础、Android / Kotlin 基础
-- 多线程/异步代码、后端 API、UI 开发、单元测试和计算机基础。对应节点：并发与同步、HTTP 与 API 设计、移动端工程、测试设计、程序设计基础
-
-**JD 明示加分项（原文归纳）**
-
-本记录未单独提取加分段落，不代表公司没有其他考量。
-
-**原文短摘**
-
-> Experience writing multi-threaded, asynchronous code
-
-**知识映射关联方向：** 移动端开发实习生
-
-<a id="verkada-5211595007"></a>
-
-## Verkada · Embedded Software Engineering Intern 2027
-
-- 地点：San Mateo, CA, US · 现场
-- 核查：2026-10-18
-- 状态：核查日原文可读取；投递前复核
-- [官方职位原文](https://job-boards.greenhouse.io/verkada/jobs/5211595007)
-- [官方公开数据源](https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5211595007)
-
-**归属与适用范围：** 这是 Embedded Linux 路径；MCU/RTOS 团队的技能组合会不同。
-
-**JD 明示资格与时间**
-
-- 计算机或类似技术专业本科/硕士在读；2028 年 6 月前毕业
-- 可参加总部 2027 冬季或夏季实习；有开发上线产品的实习经历
-
-**JD 明示技能与职责（原文归纳）**
-
-- Embedded Linux、C、USB、I2C、Yocto 的工作经验。对应节点：嵌入式 C/C++、C 语言与内存基础、硬件接口与通信协议、Linux
-- 熟悉 Linux 服务、设备驱动、内核修改、安全系统与安全编程。对应节点：操作系统、Linux、安全编码、嵌入式 C/C++
-
-**JD 明示加分项（原文归纳）**
-
-本记录未单独提取加分段落，不代表公司没有其他考量。
-
-**原文短摘**
-
-> Work experience with Embedded Linux, C, USB, I2C, and Yocto
-
-**知识映射关联方向：** 嵌入式 / IoT 实习生
-
-<a id="verkada-5213881007"></a>
-
-## Verkada · Security Software Engineering Intern 2027
-
-- 地点：San Mateo, CA, US · 现场
-- 核查：2026-10-18
-- 状态：核查日原文可读取；投递前复核
-- [官方职位原文](https://job-boards.greenhouse.io/verkada/jobs/5213881007)
-- [官方公开数据源](https://boards-api.greenhouse.io/v1/boards/verkada/jobs/5213881007)
-
-**归属与适用范围：** 标题虽属安全软件，原文技能段偏通用工程；没有把 OWASP、渗透测试等通用建议冒充为其明示要求。
-
-**JD 明示资格与时间**
-
-- 计算机或类似技术专业本科/硕士在读；2028 年 6 月前毕业
-- 可参加总部 2027 冬季或夏季实习；有产品开发上线的实习经历
-
-**JD 明示技能与职责（原文归纳）**
-
-- 熟悉 Python 或 Go、分布式系统、OS、AWS、Docker，适应敏捷团队开发。对应节点：Python、Go、分布式系统、操作系统、云计算基础、容器与 Docker、工程协作与技术表达
-
-**JD 明示加分项（原文归纳）**
-
-- REST API 与 Linux 服务经验。对应节点：HTTP 与 API 设计、Linux
-
-**原文短摘**
-
-> Familiar with REST APIs and Linux servers are a plus
-
-**知识映射关联方向：** 网络安全 / 安全工程实习生
+**知识映射关联方向：** 通用后端与数据平台
 
 <a id="janestreet-8625946002"></a>
 
@@ -507,7 +316,7 @@
 **JD 明示技能与职责（原文归纳）**
 
 - OS 与体系结构、socket/虚拟内存/进程生命周期、基础网络协议与 Linux 命令行。对应节点：操作系统、计算机组成与体系结构、计算机网络、Linux、Shell 与命令行
-- 基础设施、性能排障、监控、自动化与根因分析等项目职责。对应节点：性能分析、可观测性与 SRE、调试与故障定位、工程协作与技术表达
+- 基础设施、性能排障、监控、自动化与根因分析等项目职责。对应节点：性能分析、日志、指标与可观测性、调试与故障定位、工程协作与技术表达
 
 **JD 明示加分项（原文归纳）**
 
@@ -517,7 +326,7 @@
 
 > Knowledgeable about operating system fundamentals and computer architecture
 
-**知识映射关联方向：** 云平台 / DevOps / SRE 实习生、C++ / 系统软件实习生
+**知识映射关联方向：** C++ 系统与量化开发
 
 <a id="janestreet-8617298002"></a>
 
@@ -549,7 +358,7 @@
 
 > A top-notch programmer with a love for technology
 
-**知识映射关联方向：** 量化开发实习生、后端开发实习生
+**知识映射关联方向：** C++ 系统与量化开发、通用后端与数据平台、金融科技后端
 
 <a id="janestreet-8623868002"></a>
 
@@ -575,13 +384,13 @@
 
 **JD 明示加分项（原文归纳）**
 
-- 研究经验加分；多数候选人有数据科学或 ML 经历，原文强调思考学习方式。对应节点：机器学习、算法建模与论文复现
+- 研究经验加分；多数候选人有数据科学或 ML 经历，原文强调思考学习方式。对应节点：机器学习、实验复现与研究表达
 
 **原文短摘**
 
 > A strong programmer who's comfortable with Python
 
-**知识映射关联方向：** 量化研究实习生
+**知识映射关联方向：** 量化研究
 
 ## 复核记录
 

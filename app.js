@@ -1,13 +1,15 @@
 (function () {
   const data = window.ATLAS_DATA;
-  const skills = data.skills, roles = data.roles, sources = data.sources, layers = data.layers;
+  const skills = data.skills, roles = data.roles, sources = data.sources, layers = data.layers, domains = data.domains;
   const skillById = Object.fromEntries(skills.map((skill) => [skill.id, skill]));
   const roleById = Object.fromEntries(roles.map((role) => [role.id, role]));
+  const domainById = Object.fromEntries(domains.map(domain=>[domain.id,domain]));
+  const moduleById = Object.fromEntries(domains.flatMap(domain=>domain.modules).map(module=>[module.id,module]));
   const colors = Object.fromEntries(Object.entries(layers).map(([key, value]) => [key, value.color]));
   let activeGroup = "all", activeLayer = "all", activeRoleId = null, searchQuery = "", showOnlyUnstarted = false;
-  let networkLayer = "all", networkScale = 1, dragging = false, dragStart = null, dragOrigin = null;
-  let selectedSkillId = null, pathRoleId = "backend", pathChoices = {}, traceDependencies = false;
-  let networkView = window.matchMedia("(max-width: 760px)").matches ? "list" : "graph";
+  let networkLayer = "all", sphere;
+  let selectedSkillId = null, pathRoleId = "cpp-systems", pathChoices = {}, traceDependencies = false, traceSkillId = null;
+  let networkView = matchMedia('(max-width:760px)').matches ? "list" : "graph", mapPath = {domainId:null,moduleId:null,skillId:null};
   const progressKey = "career-skill-atlas-progress-v1";
   const progressLabels = {"not-started":"未开始","learning":"学习中","explain":"可以讲清","verified":"实现并验证"};
   let progress = {};
@@ -35,12 +37,15 @@
   function updateUrl() {
     const url = new URL(location.href);
     if (activeRoleId) url.searchParams.set("role", activeRoleId); else url.searchParams.delete("role");
-    if (selectedSkillId) url.searchParams.set("skill", selectedSkillId); else url.searchParams.delete("skill");
-    history.replaceState(null,"",url);
+    for(const [param,key] of [["domain","domainId"],["module","moduleId"],["skill","skillId"]]) {
+      if(mapPath[key])url.searchParams.set(param,mapPath[key]);else url.searchParams.delete(param);
+    }
+    if(url.href!==location.href)history.pushState(null,"",url);
   }
   function jdMarkup(jd) {
-    const claims = (items) => items.map((item) => '<li><p>'+esc(item.text)+'</p><div class="skill-pill-wrap">'+item.skillIds.map((id) => skillButton(id,"mini-skill-muted")).join("")+'</div></li>').join("");
-    return '<details class="jd-card"><summary><span class="jd-company">'+esc(jd.company)+'</span><strong>'+esc(jd.title)+'</strong><span class="jd-meta">'+esc(jd.location)+' · 核查 '+jd.checked+'</span><span class="jd-status">'+statusLabels[jd.status]+'</span></summary><div class="jd-body"><p class="jd-note">'+esc(jd.note)+'</p><h4>JD 明示资格与时间</h4><ul>'+listHtml(jd.eligibility)+'</ul><h4>JD 明示技能与职责（原文归纳）</h4><ul class="jd-claims">'+claims(jd.required)+'</ul>'+(jd.preferred.length ? '<h4>JD 明示加分项（原文归纳）</h4><ul class="jd-claims">'+claims(jd.preferred)+'</ul>' : '')+'<blockquote lang="en">'+esc(jd.quote)+'</blockquote><a class="jd-original" href="'+esc(jd.url)+'" target="_blank" rel="noreferrer">查看官方职位原文 ↗</a></div></details>';
+    const claims = (items) => items.map((item) => '<li><p>'+esc(item.text)+'</p><div class="skill-pill-wrap">'+(item.skillIds.map((id) => skillButton(id,"mini-skill-muted")).join("")||'<span class="model-note">原文保留；此项不在当前学习路线内展开。</span>')+'</div></li>').join("");
+    const scope=jd.scope==="adjacent-research"?"相邻研究岗对照 · ":jd.scope==="adjacent-systems"?"相邻系统岗对照 · ":"";
+    return '<details class="jd-card"><summary><span class="jd-company">'+esc(jd.company)+'</span><strong>'+esc(jd.title)+'</strong><span class="jd-meta">'+esc(jd.location)+' · 核查 '+jd.checked+'</span><span class="jd-status">'+scope+statusLabels[jd.status]+'</span></summary><div class="jd-body"><p class="jd-note">'+esc(jd.note)+'</p><h4>JD 明示资格与时间</h4><ul>'+listHtml(jd.eligibility)+'</ul><h4>JD 明示技能与职责（原文归纳）</h4><ul class="jd-claims">'+claims(jd.required)+'</ul>'+(jd.preferred.length ? '<h4>JD 明示加分项（原文归纳）</h4><ul class="jd-claims">'+claims(jd.preferred)+'</ul>' : '')+'<blockquote lang="en">'+esc(jd.quote)+'</blockquote><a class="jd-original" href="'+esc(jd.url)+'" target="_blank" rel="noreferrer">查看官方职位原文 ↗</a></div></details>';
   }
   function sourceLink(id, compact) {
     const source = sources.find((item) => item.id === id);
@@ -65,7 +70,7 @@
     const visible = roles.filter(roleMatches), grid = $("#role-grid");
     grid.innerHTML = visible.length ? visible.map((role) => {
       const selected = role.id === activeRoleId ? " is-selected" : "";
-      return '<button class="role-card'+selected+'" type="button" aria-pressed="'+(role.id===activeRoleId)+'" data-role-id="'+role.id+'" style="--role-accent:'+role.color+'"><span class="role-code">'+esc(role.code)+'</span><span class="role-title">'+esc(role.title)+'</span><span class="role-summary">'+esc(role.summary)+'</span><span class="role-bottom"><span class="role-skill-count">'+role.skillIds.length+' 节点 · '+jdForRole(role.id).length+' 份 JD 样例</span><span class="role-arrow" aria-hidden="true">↗</span></span><span class="role-accent-bar"></span></button>';
+      return '<button class="role-card'+selected+'" type="button" aria-pressed="'+(role.id===activeRoleId)+'" data-role-id="'+role.id+'" style="--role-accent:'+role.color+'"><span class="role-code">'+esc(role.code)+'</span><span class="role-priority">'+esc(role.priority)+'</span><span class="role-title">'+esc(role.title)+'</span><span class="role-summary">'+esc(role.summary)+'</span><span class="role-bottom"><span class="role-skill-count">'+role.skillIds.length+' 节点 · '+jdForRole(role.id).length+' 份 JD 对照</span><span class="role-arrow" aria-hidden="true">↗</span></span><span class="role-accent-bar"></span></button>';
     }).join("") : '<div class="empty-state"><strong>没有匹配的岗位</strong><span>试试更短的关键词，或清除方向筛选。</span></div>';
     $$(".role-card",grid).forEach((card) => card.addEventListener("click", () => selectRole(card.dataset.roleId)));
   }
@@ -86,7 +91,7 @@
       '<div class="role-panel-section"><span class="section-tag">面试信号</span><ul>'+listHtml(role.interview)+'</ul></div>'+
       '<div class="fit-note"><strong>适配提示</strong><span>'+esc(role.fit)+'</span></div>'+
       '<a class="button button-ghost path-jump" href="#roadmap">查看这个岗位的学习顺序 →</a>'+
-      '<div class="role-panel-section jd-section"><span class="section-tag">官方 JD 样例 · '+jdForRole(role.id).length+' 份</span><p class="model-note">每份样例的地区、批次和资格分别适用；相邻岗位与多方向汇总会明确标注。</p>'+jdForRole(role.id).map(jdMarkup).join("")+'</div>'+
+      '<div class="role-panel-section jd-section"><span class="section-tag">官方 JD 对照 · '+jdForRole(role.id).length+' 份</span><p class="model-note">'+esc(role.jdScope||'每份样例的地区、批次和资格分别适用；相邻岗位与多方向汇总会明确标注。')+'</p>'+jdForRole(role.id).map(jdMarkup).join("")+'</div>'+
       '<div class="panel-links">'+role.sourceIds.slice(0,3).map((id) => sourceLink(id,true)).join("")+'</div>';
     bindSkillButtons(panel);
     $("#selection-panel").scrollTop=0;
@@ -94,7 +99,9 @@
   function selectRole(id) {
     if (!Object.hasOwn(roleById,id)) return;
     activeRoleId = id; pathRoleId=id; renderRoles(); renderRolePanel(roleById[id]); renderRoadmap();
-    networkLayer = "all"; $("#network-layer").value = "all"; renderNetwork(); updateUrl();
+    networkLayer = "all"; $("#network-layer").value = "all";
+    selectedSkillId=null;traceSkillId=null;traceDependencies=false;
+    navigateMap("root",null,false);
   }
   function renderSkills() {
     const visible = skills.filter(skillMatches), grid = $("#skill-grid");
@@ -112,12 +119,13 @@
   function showSkill(skill, focus = false) {
     if (!skill) return;
     selectedSkillId=skill.id;
+    mapPath={domainId:skill.domainId,moduleId:skill.moduleId,skillId:skill.id};
     if(networkLayer!=="all"&&networkLayer!==skill.layer){networkLayer="all";$("#network-layer").value="all";}
     const prereqs = skill.prerequisites.map((id) => skillById[id] && skillById[id].title).filter(Boolean);
     const roleNames = skill.roleIds.map((id) => roleById[id] && roleById[id].title).filter(Boolean);
     const prerequisiteHtml = prereqs.length ? prereqs.map((name,index) => '<button class="inline-skill" type="button" data-prereq="'+skill.prerequisites[index]+'">'+esc(name)+'</button>').join("、") : "这是共同底座中的起点节点。";
     const state = progress[skill.id] || "not-started";
-    $("#skill-detail-content").innerHTML = '<div class="detail-accent" style="--skill-accent:'+colors[skill.layer]+'"></div><span class="skill-layer">'+esc(layerName(skill.layer))+'</span><span class="detail-family">'+esc(skill.family)+'</span><h3 id="skill-detail-title" tabindex="-1">'+esc(skill.title)+'</h3><p class="detail-summary">'+esc(skill.summary)+'</p>'+
+    $("#skill-detail-content").innerHTML = '<div class="detail-accent" style="--skill-accent:'+colors[skill.layer]+'"></div><span class="skill-layer">'+esc(layerName(skill.layer))+'</span><span class="detail-family">'+esc(skill.family)+'</span><h3 id="skill-detail-title" tabindex="-1">'+esc(skill.title)+'</h3><p class="detail-location">'+esc(domainById[skill.domainId].title)+' / '+esc(moduleById[skill.moduleId].title)+'</p><p class="detail-summary">'+esc(skill.summary)+'</p><p class="topic-focus" id="topic-focus" hidden></p>'+
       '<div class="detail-block"><span class="section-tag">具体知识点 · '+skill.topics.length+' 项</span><ul class="topic-list">'+listHtml(skill.topics)+'</ul></div>'+
       '<div class="detail-block"><span class="section-tag">为什么重要</span><p>'+esc(skill.why)+'</p></div>'+
       '<div class="detail-block"><span class="section-tag">前置关系</span><p>'+prerequisiteHtml+'</p></div>'+
@@ -162,85 +170,121 @@
     $("#network-list").hidden=view!=="list";
     $(".graph-pan").hidden=view!=="graph";
     $("#zoom-in").disabled=view!=="graph"; $("#zoom-out").disabled=view!=="graph";
+    $("#toggle-rotation").hidden=view!=="graph";
+    sphere.setVisible(view==="graph");
     $$("[data-network-view]").forEach((button) => button.setAttribute("aria-pressed",String(button.dataset.networkView===view)));
   }
-  function renderNetworkList(visible, activeSkills, graphSkills) {
-    const listScroll=$("#network-list").scrollTop;
-    $("#network-list").innerHTML=Object.entries(layers).map(([key,layer]) => {
-      const items=visible.filter((skill) => skill.layer===key);
-      if (!items.length) return "";
-      return '<section class="adjacency-group"><h3>'+esc(layer.label)+' · '+items.length+'</h3><ul class="adjacency-items">'+items.map((skill) => '<li class="'+(skill.id===selectedSkillId?'is-selected':'')+'"><button class="adjacency-title" type="button" data-skill-id="'+skill.id+'" aria-pressed="'+(skill.id===selectedSkillId)+'">'+esc(skill.title)+'<small>'+esc(progressLabels[progress[skill.id]||"not-started"])+'</small></button>'+(activeSkills?'<span class="relation-badge">'+(activeSkills.has(skill.id)?'岗位直接关联':graphSkills.has(skill.id)?'路径基础 / 前置':'浏览补充节点')+'</span>':'')+'<div class="adjacency-pre"><span>前置：</span>'+(skill.prerequisites.length?skill.prerequisites.map((id) => skillButton(id,"mini-skill-muted")).join(""):'起点节点；可从基础概念开始。')+'</div></li>').join("")+'</ul></section>';
-    }).join("") || '<p class="empty-state">当前筛选没有节点。请切换层级或重置视图。</p>';
-    bindSkillButtons($("#network-list"));
-    $("#network-list").scrollTop=listScroll;
+  function collectPrerequisites(seeds) {
+    const ids=new Set();
+    function visit(id){if(ids.has(id))return;ids.add(id);skillById[id].prerequisites.forEach(visit);}
+    seeds.forEach(visit);return ids;
+  }
+  function networkSkills() {
+    let scope=null;
+    if(activeRoleId) {
+      const role=roleById[activeRoleId],path=pathFor(activeRoleId);
+      scope=collectPrerequisites([...role.must,...path.selected,...role.preferred,...path.required,...role.path.advance]);
+      if(selectedSkillId)collectPrerequisites([selectedSkillId]).forEach(id=>scope.add(id));
+    }
+    if(traceDependencies&&traceSkillId)scope=collectPrerequisites([traceSkillId]);
+    return skills.filter(skill=>(networkLayer==="all"||skill.layer===networkLayer)&&(!scope||scope.has(skill.id)));
+  }
+  function mapNode(kind,id,title,summary,members,color,meta) {
+    return {kind,id,title,summary,members,color,meta,
+      ariaLabel:title+'，'+meta+(kind==='topic'?'，查看内容':'，点击展开'),
+      verified:kind==='skill'&&progress[id]==='verified',selected:kind==='skill'&&id===selectedSkillId};
+  }
+  function activateMapNode(node) {
+    if(!node)return;
+    if(node.kind==='skill')showSkill(skillById[node.id],true);
+    else if(node.kind==='topic') {
+      const topic=Number(node.id.slice(node.id.lastIndexOf(':')+1));
+      const items=$$('#skill-detail-content .topic-list li');
+      items.forEach((item,index)=>item.classList.toggle('is-current-topic',index===topic));
+      const focus=$('#topic-focus');focus.hidden=false;focus.textContent='当前内容：'+node.title;
+      $$('.sphere-node').forEach(el=>{const selected=el.dataset.nodeId===node.id;el.classList.toggle('is-focused',selected);el.setAttribute('aria-pressed',String(selected));});
+      $$('.adjacency-title[data-map-kind="topic"]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.mapId===node.id)));
+      $('#skill-detail-title').focus({preventScroll:true});
+      if(matchMedia('(max-width:900px)').matches)$('#skill-detail').scrollIntoView({behavior:motion(),block:'start'});
+    } else navigateMap(node.kind,node.id);
+  }
+  function navigateMap(kind,id,focus=true) {
+    if(kind==='root')mapPath={domainId:null,moduleId:null,skillId:null};
+    if(kind==='domain'&&domainById[id])mapPath={domainId:id,moduleId:null,skillId:null};
+    if(kind==='module'&&moduleById[id])mapPath={domainId:moduleById[id].domainId,moduleId:id,skillId:null};
+    if(kind==='skill'&&skillById[id])return showSkill(skillById[id],focus);
+    renderNetwork();renderMapInspector();updateUrl();
+    if(focus)$('#network-level-title').focus({preventScroll:true});
+  }
+  function bindMapButtons(root) {
+    $$('[data-map-kind]',root).forEach(button=>button.addEventListener('click',()=>{
+      if(button.dataset.mapKind==='topic')activateMapNode({kind:'topic',id:button.dataset.mapId,title:button.dataset.topicTitle});
+      else navigateMap(button.dataset.mapKind,button.dataset.mapId);
+    }));
+  }
+  function renderMapInspector() {
+    if(mapPath.skillId)return;
+    const domain=domainById[mapPath.domainId],module=moduleById[mapPath.moduleId];
+    const group=module||domain;
+    const inScope=new Set(networkSkills().map(s=>s.id));
+    const links=module?module.skillIds.filter(id=>inScope.has(id)).map(id=>'<button type="button" class="map-child" data-skill-id="'+id+'"><span>'+esc(skillById[id].title)+'</span><small>'+esc(progressLabels[progress[id]||'not-started'])+'</small><b aria-hidden="true">→</b></button>').join(''):
+      (domain?domain.modules:domains).filter(item=>item.skillIds.some(id=>inScope.has(id))).map(item=>'<button type="button" class="map-child" data-map-kind="'+(domain?'module':'domain')+'" data-map-id="'+item.id+'"><span>'+esc(item.title)+'</span><small>'+item.skillIds.filter(id=>inScope.has(id)).length+' 个技能</small><b aria-hidden="true">→</b></button>').join('');
+    $('#skill-detail-content').innerHTML='<p class="inspector-step">'+(module?'03 / SKILLS':domain?'02 / MODULES':'01 / CONCEPTS')+'</p><h3>'+(group?esc(group.title):'先看全貌，再逐层展开')+'</h3><p class="detail-summary">'+esc(group?group.summary:'从八个大概念开始。点击概念进入模块，再选技能和具体学习内容；任何一层都可以返回。')+'</p>'+(domain?'<p class="map-stage">'+esc(domain.stage)+'</p>':'<p class="map-stage">概念 → 模块 → 技能 → 具体内容</p>')+'<div class="map-children">'+links+'</div><p class="model-note">'+(traceDependencies?'当前只展开所选技能的前置链。':'连线汇总当前分组之间的先修关系；具体前置项在技能详情内列出。')+'</p>';
+    bindMapButtons($('#skill-detail-content'));bindSkillButtons($('#skill-detail-content'));
+  }
+  function renderNetworkList(nodes,edges) {
+    const buttons=nodes.map(node=>{
+      const skill=node.kind==='skill'?skillById[node.id]:null;
+      const relations=edges.filter(edge=>edge.to===node.id).map(edge=>nodes.find(n=>n.id===edge.from)).filter(Boolean);
+      return '<li><button class="adjacency-title" type="button" data-map-kind="'+node.kind+'" data-map-id="'+node.id+'"'+(skill?' data-skill-id="'+skill.id+'"':'')+(node.kind==='topic'?' data-topic-title="'+esc(node.title)+'"':'')+' aria-pressed="false"><span>'+esc(node.title)+'</span><small>'+esc(node.meta)+(node.kind==='topic'?'':' · 展开 →')+'</small></button><p>'+esc(node.summary)+'</p>'+(skill?'<div class="adjacency-pre"><span>具体前置：</span>'+(skill.prerequisites.map(id=>skillButton(id,'mini-skill-muted')).join('')||'起点知识')+'</div>':relations.length?'<div class="adjacency-pre"><span>来自这些分组的前置：</span>'+relations.map(n=>'<button type="button" class="mini-skill mini-skill-muted" data-map-kind="'+n.kind+'" data-map-id="'+n.id+'">'+esc(n.title)+'</button>').join('')+'</div>':'')+'</li>';
+    }).join('');
+    $('#network-list').innerHTML='<ul class="adjacency-items">'+buttons+'</ul>';
+    bindMapButtons($('#network-list'));
+    // Main skill buttons already use hierarchy navigation; bind only prerequisite links here.
+    $$('.adjacency-pre [data-skill-id]',$('#network-list')).forEach(button=>button.addEventListener('click',()=>showSkill(skillById[button.dataset.skillId],true)));
   }
   function renderNetwork() {
-    const svg=$("#knowledge-network");
-    const activeSkills=activeRoleId ? new Set([...roleById[activeRoleId].must,...pathFor(activeRoleId).selected,...roleById[activeRoleId].preferred,...roleById[activeRoleId].path.core]) : null;
-    const graphSkills=activeSkills ? new Set([...activeSkills,...pathFor(activeRoleId).required]) : null;
-    if(graphSkills){
-      const pending=[...graphSkills];
-      while(pending.length){
-        const current=skillById[pending.pop()];
-        current.prerequisites.forEach((id)=>{if(!graphSkills.has(id)){graphSkills.add(id);pending.push(id);}});
-      }
+    const visible=networkSkills(),ids=new Set(visible.map(s=>s.id));
+    const domain=domainById[mapPath.domainId],module=moduleById[mapPath.moduleId],skill=skillById[mapPath.skillId];
+    let nodes,heading,level;
+    if(skill) {
+      heading=skill.title+' · 具体学习内容';level='04 / LEARNING TOPICS';
+      nodes=skill.topics.map((topic,index)=>mapNode('topic',skill.id+':'+index,topic,'属于 '+skill.title,[],domain.color,String(index+1).padStart(2,'0')+' / '+skill.topics.length));
+    } else if(module) {
+      heading=module.title;level='03 / SKILLS';
+      nodes=module.skillIds.filter(id=>ids.has(id)).map(id=>{const s=skillById[id];return mapNode('skill',id,s.title,s.summary,[id],domain.color,progress[id]==='verified'?'✓ 实现并验证':s.topics.length+' 项内容 · '+progressLabels[progress[id]||'not-started']);});
+    } else {
+      heading=domain?domain.title:'知识概念总览';level=domain?'02 / MODULES':'01 / CONCEPTS';
+      nodes=(domain?domain.modules:domains).map(group=>{
+        const members=group.skillIds.filter(id=>ids.has(id));
+        return mapNode(domain?'module':'domain',group.id,group.shortTitle||group.title,group.summary,members,domain?domain.color:group.color,members.length+' 个技能 · 点击展开');
+      }).filter(node=>node.members.length);
     }
-    const focusChain=new Set();
-    function collect(id) { if(focusChain.has(id))return;focusChain.add(id);skillById[id].prerequisites.forEach(collect); }
-    if(selectedSkillId) collect(selectedSkillId);
-    const visible=skills.filter((skill) => (networkLayer==="all" || skill.layer===networkLayer) && (!graphSkills || focusChain.has(skill.id) || graphSkills.has(skill.id)) && (!traceDependencies || focusChain.has(skill.id)));
-    const ids=new Set(visible.map((skill)=>skill.id));
-    const laneX={foundation:180,engineering:530,data:880,specialization:1230};
-    const laneLabels={foundation:"01 基础",engineering:"02 工程",data:"03 数据 / AI",specialization:"04 分支"};
-    const ordered={foundation:[],engineering:[],data:[],specialization:[]};
-    visible.forEach((skill)=>ordered[skill.layer].push(skill));
-    const order=new Map();
-    function visit(id) { if(order.has(id))return;skillById[id].prerequisites.forEach(visit);order.set(id,order.size); }
-    skills.forEach((skill)=>visit(skill.id));
-    Object.values(ordered).forEach((items)=>items.sort((a,b)=>order.get(a.id)-order.get(b.id)));
-    const coords={};
-    const maxRows=Math.max(1,...Object.values(ordered).map((items)=>Math.ceil(items.length/2)));
-    const graphHeight=Math.max(480,100+maxRows*100), graphWidth=1400;
-    svg.setAttribute("viewBox","0 0 "+graphWidth+" "+graphHeight);
-    const viewport=$("#network-viewport");
-    svg.style.width=(1200*networkScale)+"px"; svg.style.height=(1200*networkScale*graphHeight/graphWidth)+"px";
-    Object.entries(ordered).forEach(([layer,items])=>items.forEach((skill,index)=>{coords[skill.id]=[laneX[layer]-78+(index%2)*156,85+Math.floor(index/2)*100];}));
-    const edges=[];
-    visible.forEach((skill)=>skill.prerequisites.forEach((pre)=>{if(ids.has(pre)) edges.push([pre,skill.id]);}));
-    const edgeMarkup=edges.map(([from,to])=>{
-      const a=coords[from],b=coords[to];
-      const focused=focusChain.has(from)&&focusChain.has(to)?" is-chain":"";
-      const sameLane=skillById[from].layer===skillById[to].layer;
-      const curve=sameLane?' C '+(a[0]-55)+' '+(a[1]+30)+', '+(b[0]-55)+' '+(b[1]-30)+', '+b[0]+' '+(b[1]-18):' C '+((a[0]+b[0])/2)+' '+a[1]+', '+((a[0]+b[0])/2)+' '+b[1]+', '+(b[0]-18)+' '+b[1];
-      return '<path class="network-edge'+focused+'" data-from="'+from+'" data-to="'+to+'" d="M '+a[0]+' '+a[1]+curve+'" />';
-    }).join("");
-    const laneMarkup=Object.entries(ordered).map(([layer,items])=>'<text class="lane-label" x="'+laneX[layer]+'" y="30" text-anchor="middle">'+laneLabels[layer]+' · '+items.length+'</text>').join("");
-    const nodeMarkup=visible.map((skill)=>{
-      const p=coords[skill.id],r=15;
-      const related=activeSkills&&activeSkills.has(skill.id)?" is-related":"";
-      const prerequisite=graphSkills&&graphSkills.has(skill.id)&&!activeSkills.has(skill.id)?" is-prerequisite":"";
-      const focused=selectedSkillId===skill.id?" is-focused":"";
-      const mastered = progress[skill.id] === "verified" ? " is-proven" : progress[skill.id] === "learning" || progress[skill.id] === "explain" ? " is-in-progress" : "";
-      const lines=[];let line="",lineWidth=0;
-      for(const token of skill.title.match(/[A-Za-z0-9+#.]+|./gu)){
-        if(!line&&!token.trim())continue;
-        const width=Array.from(token).reduce((sum,char)=>sum+(/[\x00-\x7f]/.test(char)?.55:1),0);
-        if(line&&lineWidth+width>10){lines.push(line.trim());line="";lineWidth=0;}
-        line+=token;lineWidth+=width;
-      }
-      if(line.trim())lines.push(line.trim());
-      const glyph=progress[skill.id]==="verified"?'✓':progress[skill.id]==="learning"||progress[skill.id]==="explain"?'·':'';
-      return '<g class="network-node'+related+prerequisite+focused+mastered+'" data-skill-id="'+skill.id+'" tabindex="0" role="button" aria-pressed="'+(selectedSkillId===skill.id)+'" aria-label="'+esc(skill.title)+'，'+esc(layerName(skill.layer))+'，'+esc(progressLabels[progress[skill.id] || "not-started"])+'" transform="translate('+p[0]+' '+p[1]+')"><title>'+esc(skill.title)+'</title><circle class="node-halo" r="'+(r+9)+'" fill="'+colors[skill.layer]+'"></circle><circle class="node-circle" r="'+r+'" fill="'+colors[skill.layer]+'"></circle><text class="node-glyph" aria-hidden="true" text-anchor="middle" y="5">'+glyph+'</text><text class="node-label" aria-hidden="true" text-anchor="middle">'+lines.map((line,index) => '<tspan x="0" y="'+(r+23+index*17)+'">'+esc(line)+'</tspan>').join("")+'</text></g>';
-    }).join("");
-    svg.innerHTML='<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M 0 0 L 10 3 L 0 6 z" fill="#8baaca"></path></marker></defs>'+laneMarkup+'<g class="edges" marker-end="url(#arrow)">'+edgeMarkup+'</g><g class="nodes">'+nodeMarkup+'</g>';
-    $$(".network-node",svg).forEach((node)=>{
-      const action=()=>showSkill(skillById[node.dataset.skillId],true);
-      node.addEventListener("click",action);
-      node.addEventListener("keydown",(event)=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();action();}});
-    });
-    renderNetworkList(visible,activeSkills,graphSkills); setNetworkView(networkView);
-    $("#network-summary").textContent=visible.length+" 个节点 · "+edges.length+" 条当前可见前置关系"+(activeRoleId?' · '+roleById[activeRoleId].title:' · 全图')+(traceDependencies?' · 所选节点前置链':'');
-    $("#trace-dependencies").disabled=!selectedSkillId;
+    const parent=Object.fromEntries(nodes.flatMap(node=>node.members.map(id=>[id,node.id]))),edgeMap=new Map();
+    visible.forEach(s=>s.prerequisites.forEach(pre=>{
+      const from=parent[pre],to=parent[s.id];
+      if(!from||!to||from===to)return;
+      const key=from+'>'+to;
+      if(!edgeMap.has(key))edgeMap.set(key,{from,to,count:0});
+      edgeMap.get(key).count++;
+    }));
+    const edges=[...edgeMap.values()];
+    $('#network-level-title').textContent=heading;
+    $('#network-level-kicker').textContent=level;
+    $('#network-level-description').textContent=skill?'点击一个内容节点，在详情面板查看学习范围、前置项与验证成果。':module?module.summary:domain?domain.summary:'每个球面节点是一块大知识范围。选一个概念，展开下一层。';
+    const crumbs=[['root','', '知识总览'],...(domain?[['domain',domain.id,domain.shortTitle||domain.title]]:[]),...(module?[['module',module.id,module.title]]:[]),...(skill?[['skill',skill.id,skill.title]]:[])];
+    $('#network-breadcrumbs').innerHTML='<ol>'+crumbs.map(([kind,id,label],index)=>'<li><button type="button" data-map-kind="'+kind+'" data-map-id="'+id+'"'+(index===crumbs.length-1?' aria-current="page"':'')+'>'+esc(label)+'</button></li>').join('')+'</ol>';
+    bindMapButtons($('#network-breadcrumbs'));
+    $('#map-back').disabled=!domain;
+    $('#network-empty').hidden=nodes.length>0;
+    const key=[mapPath.domainId,mapPath.moduleId,mapPath.skillId,networkLayer,activeRoleId,traceDependencies].join('/');
+    sphere.setScene(nodes,edges,key);
+    renderNetworkList(nodes,edges);setNetworkView(networkView);
+    $('#network-summary').textContent=nodes.length+' 个'+(skill?'学习内容':module?'技能':domain?'模块':'大概念')+(activeRoleId?' · '+roleById[activeRoleId].title:' · 个人学习主线')+(traceDependencies?' · '+skillById[traceSkillId].title+'的前置链':'');
+    $('#network-viewport').setAttribute('aria-label',heading+'，可旋转的 3D 球状知识地图');
+    $('#network-list').setAttribute('aria-label',heading+'，逐层知识清单');
+    $("#trace-dependencies").disabled=!(selectedSkillId||traceSkillId);
+    $("#trace-dependencies").textContent=traceDependencies?'退出前置链':'查看所选技能前置链';
     $("#trace-dependencies").setAttribute("aria-pressed",String(traceDependencies));
   }
   function renderSources() { $("#source-links").innerHTML=sources.map((source)=>sourceLink(source.id,false)).join(""); }
@@ -264,6 +308,11 @@
     button.textContent = showOnlyUnstarted ? "显示全部" : "只看待学";
   }
   function init() {
+    sphere=new window.AtlasSphere({viewport:$('#network-viewport'),svg:$('#knowledge-network'),onActivate:activateMapNode,onMotionChange:({paused,reduced})=>{
+      const button=$('#toggle-rotation');button.disabled=reduced;
+      button.textContent=reduced?'已减少动态效果':paused?'开始自动旋转':'暂停自动旋转';
+      button.setAttribute('aria-pressed',String(paused||reduced));
+    }});
     $("#stat-roles").textContent=roles.length;
     $("#stat-skills").textContent=skills.length;
     $("#stat-edges").textContent=skills.reduce((sum,skill)=>sum+skill.prerequisites.length,0);
@@ -273,30 +322,59 @@
     $("#path-role").innerHTML=roleOptions;
     $("#jd-role-filter").insertAdjacentHTML("beforeend",roleOptions);
     const params=new URLSearchParams(location.search);
-    if (Object.hasOwn(roleById,params.get("role"))) { activeRoleId=params.get("role"); pathRoleId=activeRoleId; }
+    const roleParam=params.get('role'),roleId=Object.hasOwn(data.roleAliases,roleParam)?data.roleAliases[roleParam]:roleParam;
+    if (Object.hasOwn(roleById,roleId)) { activeRoleId=roleId; pathRoleId=activeRoleId; }
+    const domainParam=params.get('domain'),moduleParam=params.get('module');
+    if(Object.hasOwn(domainById,domainParam))mapPath.domainId=domainParam;
+    if(Object.hasOwn(moduleById,moduleParam))mapPath={domainId:moduleById[moduleParam].domainId,moduleId:moduleParam,skillId:null};
     if (Object.hasOwn(skillById,params.get("skill"))) selectedSkillId=params.get("skill");
     renderRoles(); renderRolePanel(roleById[activeRoleId]); renderSkills(); renderNetwork(); renderSources(); renderRoadmap(); renderEvidence();
     if(selectedSkillId) showSkill(skillById[selectedSkillId]);
+    else renderMapInspector();
     updateProgressCount();
+    window.addEventListener('popstate',()=>{
+      const params=new URLSearchParams(location.search),requested=params.get('role');
+      const roleId=Object.hasOwn(data.roleAliases,requested)?data.roleAliases[requested]:requested;
+      activeRoleId=Object.hasOwn(roleById,roleId)?roleId:null;
+      pathRoleId=activeRoleId||'cpp-systems';
+      mapPath={domainId:null,moduleId:null,skillId:null};selectedSkillId=null;
+      traceDependencies=false;traceSkillId=null;networkLayer='all';$('#network-layer').value='all';
+      if(Object.hasOwn(domainById,params.get('domain')))mapPath.domainId=params.get('domain');
+      if(Object.hasOwn(moduleById,params.get('module'))) {
+        const module=moduleById[params.get('module')];mapPath={domainId:module.domainId,moduleId:module.id,skillId:null};
+      }
+      renderRoles();renderRolePanel(roleById[activeRoleId]);renderRoadmap();
+      if(Object.hasOwn(skillById,params.get('skill')))showSkill(skillById[params.get('skill')],true);
+      else {renderNetwork();renderMapInspector();$('#network-level-title').focus({preventScroll:true});}
+    });
     $$(".chip").forEach((button)=>button.addEventListener("click",()=>{activeGroup=button.dataset.group;$$(".chip").forEach((item)=>{item.classList.toggle("is-active",item===button);item.setAttribute("aria-pressed",String(item===button));});renderRoles();}));
-    $("#global-search").addEventListener("input",(event)=>{searchQuery=event.target.value.trim().toLowerCase();renderRoles();renderSkills();});
+    $("#global-search").addEventListener("input",(event)=>{searchQuery=event.target.value.trim().toLowerCase();if(searchQuery)$('#skill-library-details').open=true;renderRoles();renderSkills();});
     $$(".layer-tab").forEach((button)=>button.addEventListener("click",()=>{activeLayer=button.dataset.layer;$$(".layer-tab").forEach((item)=>{item.classList.toggle("is-active",item===button);item.setAttribute("aria-pressed",String(item===button));});renderSkills();}));
     $("#progress-filter").addEventListener("click",()=>{showOnlyUnstarted=!showOnlyUnstarted;updateProgressCount();renderSkills();});
-    $("#network-layer").addEventListener("change",(event)=>{networkLayer=event.target.value;renderNetwork();});
-    $("#zoom-in").addEventListener("click",()=>{networkScale=Math.min(2,networkScale+.15);renderNetwork();});
-    $("#zoom-out").addEventListener("click",()=>{networkScale=Math.max(.6,networkScale-.15);renderNetwork();});
-    $("#reset-network").addEventListener("click",()=>{networkLayer="all";networkScale=1;activeRoleId=null;traceDependencies=false;$("#network-layer").value="all";renderNetwork();renderRoles();renderRolePanel(null);$("#network-viewport").scrollTo(0,0);updateUrl();});
-    $("#trace-dependencies").addEventListener("click",()=>{traceDependencies=!traceDependencies;renderNetwork();});
+    $("#network-layer").addEventListener("change",(event)=>{networkLayer=event.target.value;navigateMap('root',null,false);});
+    $("#zoom-in").addEventListener("click",()=>sphere.zoom(.12));
+    $("#zoom-out").addEventListener("click",()=>sphere.zoom(-.12));
+    $("#reset-network").addEventListener("click",()=>{
+      networkLayer="all";activeRoleId=null;selectedSkillId=null;traceSkillId=null;traceDependencies=false;
+      $("#network-layer").value="all";sphere.reset();renderRoles();renderRolePanel(null);navigateMap('root',null,false);
+    });
+    $('#map-back').addEventListener('click',()=>{
+      if(mapPath.skillId)navigateMap('module',mapPath.moduleId);
+      else if(mapPath.moduleId)navigateMap('domain',mapPath.domainId);
+      else navigateMap('root');
+    });
+    $('#toggle-rotation').addEventListener('click',()=>sphere.setPaused(!sphere.paused));
+    $('#clear-map-filter').addEventListener('click',()=>{$('#reset-network').click();});
+    $("#trace-dependencies").addEventListener("click",()=>{
+      traceDependencies=!traceDependencies;
+      if(traceDependencies)traceSkillId=selectedSkillId||traceSkillId;
+      networkLayer='all';$('#network-layer').value='all';navigateMap('root',null,false);
+    });
     $$("[data-network-view]").forEach((button) => button.addEventListener("click",()=>{setNetworkView(button.dataset.networkView);}));
     $("#path-role").addEventListener("change",(event)=>selectRole(event.target.value));
     $("#jd-role-filter").addEventListener("change",renderEvidence);
-    const viewport=$("#network-viewport");
-    viewport.addEventListener("wheel",(event)=>{if(!event.ctrlKey&&!event.metaKey)return;event.preventDefault();networkScale=Math.min(2,Math.max(.6,networkScale+(event.deltaY>0?-.1:.1)));renderNetwork();},{passive:false});
-    viewport.addEventListener("pointerdown",(event)=>{if(event.pointerType!=="mouse"||event.button!==0||event.target.closest(".network-node"))return;dragging=true;dragStart={x:event.clientX,y:event.clientY};dragOrigin={x:viewport.scrollLeft,y:viewport.scrollTop};viewport.setPointerCapture(event.pointerId);});
-    viewport.addEventListener("pointermove",(event)=>{if(!dragging)return;viewport.scrollLeft=dragOrigin.x-(event.clientX-dragStart.x);viewport.scrollTop=dragOrigin.y-(event.clientY-dragStart.y);});
-    viewport.addEventListener("pointerup",()=>{dragging=false;});
-    viewport.addEventListener("pointercancel",()=>{dragging=false;});
-    $$("[data-pan]").forEach((button)=>button.addEventListener("click",()=>{const [left,top]=button.dataset.pan.split(",").map(Number);viewport.scrollBy({left,top,behavior:motion()});}));
+    $$('[data-rotate]').forEach(button=>button.addEventListener('click',()=>sphere.rotate(...button.dataset.rotate.split(',').map(Number))));
+    $('#reset-camera').addEventListener('click',()=>sphere.reset());
     $("#export-progress").addEventListener("click",()=>{
       const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),skills:progress},null,2)],{type:"application/json"});
       const url=URL.createObjectURL(blob), link=document.createElement("a");

@@ -4,7 +4,8 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 const net = require("net");
-const data = require("./load-data.cjs");
+// Compare browser snapshots with plain values rather than VM-realm array prototypes.
+const data = JSON.parse(JSON.stringify(require("./load-data.cjs")));
 const edge = process.env.EDGE_BIN || "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe";
 if (!fs.existsSync(edge)) {
   console.error("Browser verification requires Chromium; set EDGE_BIN to its executable path.");
@@ -71,7 +72,7 @@ async function main() {
     if (result.exceptionDetails) throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text);
     return result.result.value;
   }
-  const click = (selector) => evaluate("document.querySelector(" + JSON.stringify(selector) + ").click()");
+  const click = (selector) => evaluate("document.querySelector(" + JSON.stringify(selector) + ").dispatchEvent(new MouseEvent('click',{bubbles:true}))");
   const choose = (selector, value) => evaluate("(()=>{const el=document.querySelector(" + JSON.stringify(selector) + ");el.value=" + JSON.stringify(value) + ";el.dispatchEvent(new Event('change',{bubbles:true}));})()");
   const queryIds = (selector) => evaluate("[...document.querySelectorAll(" + JSON.stringify(selector) + ")].map(el=>el.dataset.skillId)");
   async function ready() {
@@ -92,114 +93,231 @@ async function main() {
   await send("Page.navigate", { url: origin });
   await ready();
   await evaluate("document.fonts.ready.then(()=>true)");
-  const initial = await evaluate("({roles:document.querySelectorAll('.role-card').length,skills:document.querySelectorAll('.skill-card').length,nodes:document.querySelectorAll('.network-node').length,edges:document.querySelectorAll('.network-edge').length,jds:document.querySelectorAll('#jd-library .jd-card').length})");
-  assert.deepEqual(initial, { roles: data.roles.length, skills: data.skills.length, nodes: data.skills.length, edges: data.skills.reduce((sum, skill) => sum + skill.prerequisites.length, 0), jds: data.jdEvidence.length });
-  for (const asset of ["/", "/app.js", "/data.js", "/styles.css"]) assert.equal(localRequests.get(asset), 200, "App asset did not load: " + asset);
+  const nodeIds = () => evaluate("[...document.querySelectorAll('.sphere-node')].map(el=>el.dataset.nodeId).sort()");
+  const listIds = () => evaluate("[...document.querySelectorAll('.adjacency-title')].map(el=>el.dataset.mapId).sort()");
+  const level = () => evaluate("document.querySelector('#network-level-kicker').textContent");
+  const orientation = () => evaluate("document.querySelector('#knowledge-network').dataset.orientation");
+  async function readableLabels(context) {
+    await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'})");
+    await wait(120);
+    // Flush the rendered frame after device emulation before inspecting nested SVG bounds.
+    await send('Page.captureScreenshot',{format:'png'});
+    const issues=await evaluate(`(()=>{
+      const viewport=document.querySelector('#knowledge-network').getBoundingClientRect();
+      const labels=[...document.querySelectorAll('.sphere-label-bg')].map(el=>({id:el.closest('.sphere-node').dataset.nodeId,box:el.getBoundingClientRect()}));
+      const issues=[];
+      for(let i=0;i<labels.length;i++) {
+        const a=labels[i];
+        if(a.box.left<viewport.left-1||a.box.right>viewport.right+1||a.box.top<viewport.top-1||a.box.bottom>viewport.bottom+1)issues.push('clipped '+a.id);
+        for(const b of labels.slice(i+1))if(Math.min(a.box.right,b.box.right)-Math.max(a.box.left,b.box.left)>1&&Math.min(a.box.bottom,b.box.bottom)-Math.max(a.box.top,b.box.top)>1)issues.push(a.id+' overlaps '+b.id);
+      }
+      return {issues,viewport:viewport.toJSON(),viewBox:document.querySelector('#knowledge-network').getAttribute('viewBox'),labels:labels.map(l=>({id:l.id,box:l.box.toJSON()}))};
+    })()`);
+    if(issues.issues.length) {
+      console.error(JSON.stringify(issues));
+      await screenshot('label-overlap-'+context.replace(/\W+/g,'-'),'#network-viewport');
+      console.error(await evaluate("(()=>{const s=document.querySelector('#knowledge-network'),v=document.querySelector('#network-viewport');return JSON.stringify({context:"+JSON.stringify(context)+",viewBox:s.getAttribute('viewBox'),viewport:s.getBoundingClientRect().toJSON(),width:v.clientWidth,height:v.clientHeight});})()"));
+    }
+    assert.deepEqual(issues.issues,[],context+' labels should fit without overlap');
+  }
+  async function pointerActivate(id) {
+    const selector='.sphere-node[data-node-id="'+id+'"] .sphere-label-bg';
+    await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'})");
+    const point=await evaluate("(()=>{const r=document.querySelector("+JSON.stringify(selector)+").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()");
+    await send('Input.dispatchMouseEvent',{type:'mouseMoved',...point});
+    await send('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
+    await send('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',clickCount:1});
+  }
+  async function key(key, code, virtual) {
+    await send("Input.dispatchKeyEvent", { type:"keyDown", key, code, windowsVirtualKeyCode:virtual });
+    await send("Input.dispatchKeyEvent", { type:"keyUp", key, code, windowsVirtualKeyCode:virtual });
+  }
+  async function activate(id, kind = "domain") {
+    const selector='.sphere-node[data-node-kind="'+kind+'"][data-node-id="'+id+'"]';
+    await evaluate("document.querySelector("+JSON.stringify(selector)+").focus({preventScroll:true})");
+    await key("Enter","Enter",13);
+  }
+  const initial = await evaluate("({roles:document.querySelectorAll('.role-card').length,skills:document.querySelectorAll('.skill-card').length,nodes:document.querySelectorAll('.sphere-node').length,jds:document.querySelectorAll('#jd-library .jd-card').length})");
+  assert.deepEqual(initial, {roles:data.roles.length,skills:data.skills.length,nodes:data.domains.length,jds:data.jdEvidence.length});
+  assert.deepEqual(await nodeIds(), data.domains.map(d=>d.id).sort());
+  assert.deepEqual(await listIds(), await nodeIds());
+  assert.equal(await evaluate("document.querySelector('#skill-library-details').open"),false,"Full skill library should start collapsed");
+  assert.ok(await evaluate("document.querySelectorAll('.sphere-wire path').length>=6 && [...document.querySelectorAll('.sphere-node')].every(n=>n.getAttribute('transform').includes('translate'))"),"Sphere must contain projected geometry");
+  for (const asset of ["/","/app.js","/sphere.js","/data.js","/styles.css"]) assert.equal(localRequests.get(asset),200,"App asset did not load: "+asset);
   await screenshot("desktop-overview");
-  await screenshot("desktop-full-network", "#network");
-  await click('[data-group="data-ai"]');
-  assert.equal(await evaluate("document.querySelectorAll('.role-card').length"), data.roles.filter((role) => role.group === "data-ai").length);
-  await click('[data-role-id="ai-app"]');
-  assert.equal(await evaluate("document.querySelector('#path-role').value"), "ai-app");
-  assert.equal(await evaluate("document.querySelector('.selected-role-header h3').textContent"), data.roles.find((role) => role.id === "ai-app").title);
-  assert.ok(await evaluate("document.querySelectorAll('.network-node.is-prerequisite').length>0"));
-  await choose('[data-path-choice="0"]', "typescript");
-  const aiPath = await queryIds(".path-chain [data-skill-id]");
-  assert.ok(aiPath.includes("typescript") && aiPath.includes("rag") && !aiPath.includes("python"), "AI application route must respect chosen language");
-  assert.ok((await queryIds(".network-node")).includes("typescript"));
-  const aiGraph = await queryIds(".network-node");
-  assert.ok(aiPath.every((id) => aiGraph.includes(id)), "Selected learning path should be present in the graph");
-  await evaluate("document.querySelector('.network-node[data-skill-id=rag]').focus()");
-  await send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
-  await send("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 });
-  assert.equal(await evaluate("document.activeElement.id"), "skill-detail-title", "Keyboard selection should move focus to the inspector");
-  assert.equal(await evaluate("document.querySelectorAll('#skill-detail-content .topic-list li').length"), data.skills.find((skill) => skill.id === "rag").topics.length);
-  await choose("#progress-status", "verified");
-  assert.equal(await evaluate("JSON.parse(localStorage.getItem('career-skill-atlas-progress-v1')).rag"), "verified");
+  await screenshot("desktop-concepts","#network");
+  await screenshot("desktop-sphere",".network-card");
+  await readableLabels('Desktop concepts');
+
+  // Check motion and controls on the rendered scene, including a real pointer drag.
+  await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'});document.activeElement.blur()");
+  await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:2,y:2});
+  await until(()=>evaluate("document.querySelector('#knowledge-network').dataset.rotating==='true'"),"automatic sphere rotation");
+  const autoBefore=await orientation();await wait(250);
+  assert.notEqual(await orientation(),autoBefore,"Sphere should actually animate");
+  await click("#toggle-rotation");
+  const paused=await orientation();await wait(150);
+  assert.equal(await orientation(),paused,"Pause button should stop rotation");
+  await click('[data-rotate=".24,0"]');assert.notEqual(await orientation(),paused);
+  await click("#zoom-in");assert.ok(await evaluate("Number(document.querySelector('#knowledge-network').dataset.zoom)>1"));
+  await click("#reset-camera");assert.equal(await evaluate("document.querySelector('#knowledge-network').dataset.zoom"),"1.00");
+  await evaluate("document.querySelector('#network-viewport').focus({preventScroll:true})");
+  const beforeKeyboard=await orientation();await key("ArrowRight","ArrowRight",39);assert.notEqual(await orientation(),beforeKeyboard);
+  const box=await evaluate("(()=>{const r=document.querySelector('#network-viewport').getBoundingClientRect();return {x:r.x+15,y:r.y+30}})()");
+  const beforeDrag=await orientation();
+  await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:box.x,y:box.y});
+  await send("Input.dispatchMouseEvent",{type:"mousePressed",x:box.x,y:box.y,button:"left",clickCount:1});
+  await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:box.x+80,y:box.y+30,button:"left",buttons:1});
+  await send("Input.dispatchMouseEvent",{type:"mouseReleased",x:box.x+80,y:box.y+30,button:"left",clickCount:1});
+  assert.notEqual(await orientation(),beforeDrag,"Dragging should rotate the scene");
+  assert.equal(await level(),"01 / CONCEPTS","Dragging must not open a node");
+  await click("#reset-camera");
+
+  // Drill through all four levels. Browser navigation and breadcrumbs restore scope.
+  const trading=data.domains.find(d=>d.id==='trading-research'), eventModule=trading.modules.find(m=>m.id==='event-engine');
+  await wait(350);await pointerActivate(trading.id);assert.equal(await level(),"02 / MODULES");
+  assert.deepEqual(await nodeIds(),trading.modules.map(m=>m.id).sort());
+  assert.equal(await evaluate("document.activeElement.id"),"network-level-title");
+  await activate(eventModule.id,"module");assert.equal(await level(),"03 / SKILLS");
+  assert.deepEqual(await nodeIds(),eventModule.skillIds.slice().sort());
+  await evaluate("history.back()");await until(async()=>await level()==="02 / MODULES","browser back to concept");
+  await evaluate("history.forward()");await until(async()=>await level()==="03 / SKILLS","browser forward to module");
+  await activate("orderbook","skill");assert.equal(await level(),"04 / LEARNING TOPICS");
+  assert.equal(await evaluate("document.activeElement.id"),"skill-detail-title");
+  assert.equal((await nodeIds()).length,data.skills.find(s=>s.id==='orderbook').topics.length);
+  assert.equal(await evaluate("document.querySelectorAll('#skill-detail-content .topic-list li').length"),data.skills.find(s=>s.id==='orderbook').topics.length);
+  assert.ok(await evaluate("location.search.includes('domain=trading-research')&&location.search.includes('module=event-engine')&&location.search.includes('skill=orderbook')"));
+  await activate("orderbook:0","topic");
+  assert.ok(await evaluate("!document.querySelector('#topic-focus').hidden&&document.querySelector('.topic-list li').classList.contains('is-current-topic')"));
+  await screenshot("desktop-learning-topics","#network");
+  await readableLabels('Desktop learning topics');
+  await click("#map-back");assert.equal(await level(),"03 / SKILLS");
+  await click('#network-breadcrumbs [data-map-kind="domain"]');assert.equal(await level(),"02 / MODULES");
+  await click("#map-back");assert.equal(await level(),"01 / CONCEPTS");
+  assert.ok(await evaluate("document.querySelector('#map-back').disabled"));
+
+  // A pre-existing v1 record and obsolete IDs must be handled without losing retained progress.
+  await evaluate("localStorage.setItem('career-skill-atlas-progress-v1',JSON.stringify({rag:'verified',git:'learning','html-css':'verified'}))");
+  await send("Page.navigate",{url:origin+"/?role=ai-app&skill=rag"});await ready();
+  assert.equal(await evaluate("document.querySelector('#progress-status').value"),"verified");
+  assert.equal(await evaluate("document.querySelector('#path-role').value"),"ai-app");
+  assert.equal(await evaluate("document.querySelector('.selected-role-header h3').textContent"),data.roles.find(r=>r.id==='ai-app').title);
+  await choose("#progress-status","explain");
+  assert.deepEqual(await evaluate("JSON.parse(localStorage.getItem('career-skill-atlas-progress-v1'))"),{git:"learning",rag:"explain"});
+  await choose("#progress-status","verified");
   await click("#trace-dependencies");
-  const closure = new Set();
-  function collect(id) { if (closure.has(id)) return; closure.add(id); data.skills.find((skill) => skill.id === id).prerequisites.forEach(collect); }
+  const closure=new Set();
+  function collect(id){if(closure.has(id))return;closure.add(id);data.skills.find(s=>s.id===id).prerequisites.forEach(collect);}
   collect("rag");
-  assert.deepEqual((await queryIds(".network-node")).sort(), [...closure].sort());
+  assert.equal(await level(),"01 / CONCEPTS","Dependency view should stay grouped");
+  assert.deepEqual(await nodeIds(),data.domains.filter(d=>d.skillIds.some(id=>closure.has(id))).map(d=>d.id).sort());
+  assert.deepEqual(await nodeIds(),await listIds());
+  // Enumerate this small prerequisite tree through the actual UI, never a flat full-map view.
+  const traced=[];
+  for(const domain of data.domains.filter(d=>d.skillIds.some(id=>closure.has(id)))) {
+    await click('#network-breadcrumbs [data-map-kind="root"]');
+    await activate(domain.id);
+    for(const module of domain.modules.filter(m=>m.skillIds.some(id=>closure.has(id)))) {
+      await activate(module.id,"module");
+      const expected=module.skillIds.filter(id=>closure.has(id)).sort();
+      assert.deepEqual(await nodeIds(),expected);assert.deepEqual(await listIds(),expected);traced.push(...expected);
+      await click("#map-back");
+    }
+  }
+  assert.deepEqual(traced.sort(),[...closure].sort());
   await click('[data-network-view="list"]');
-  assert.deepEqual((await queryIds(".adjacency-title")).sort(), [...closure].sort(), "Graph and relationship list should describe the same nodes");
-  assert.ok(await evaluate("document.querySelector('#network-viewport').hidden && !document.querySelector('#network-list').hidden"));
+  assert.ok(await evaluate("document.querySelector('#network-viewport').hidden&&!document.querySelector('#network-list').hidden"));
+  await click("#trace-dependencies");await click("#reset-network");
+  await click('.adjacency-title[data-map-id="workflow"]');assert.equal(await level(),"02 / MODULES");
+  await click('.adjacency-title[data-map-id="terminal-git"]');assert.equal(await level(),"03 / SKILLS");
+  await click('.adjacency-title[data-map-id="git"]');assert.equal(await level(),"04 / LEARNING TOPICS");
+  await click('.adjacency-title[data-map-id="git:0"]');assert.ok(await evaluate("!document.querySelector('#topic-focus').hidden"));
   await click('[data-network-view="graph"]');
-  await click("#trace-dependencies");
-  await screenshot("desktop-ai-network", "#network");
-  await screenshot("desktop-ai-path", "#roadmap");
-  await choose("#path-role", "mobile");
-  await choose('[data-path-choice="0"]', "ios-swift");
-  const mobilePath = await queryIds(".path-chain [data-skill-id]");
-  assert.ok(mobilePath.includes("ios-swift") && !mobilePath.includes("android-kotlin"), "iOS should not force Android");
-  await choose("#jd-role-filter", "frontend");
-  assert.equal(await evaluate("document.querySelectorAll('#jd-library .jd-card').length"), data.jdEvidence.filter((jd) => jd.roleIds.includes("frontend")).length);
+  await click("#reset-network");
+
+  await click('[data-group="data-ai"]');
+  assert.equal(await evaluate("document.querySelectorAll('.role-card').length"),data.roles.filter(r=>r.group==='data-ai').length);
+  await click('[data-role-id="ai-app"]');
+  assert.ok((await queryIds('.path-chain [data-skill-id]')).includes('rag'));
+  await choose("#path-role","backend");await choose('[data-path-choice="0"]',"java");
+  const javaPath=await queryIds('.path-chain [data-skill-id]');
+  assert.ok(javaPath.includes('java')&&!javaPath.includes('go'),"Backend language alternatives must stay independent");
+  await screenshot("desktop-backend-path","#roadmap");
+  await choose("#jd-role-filter","fintech-backend");
+  assert.equal(await evaluate("document.querySelectorAll('#jd-library .jd-card').length"),data.jdEvidence.filter(j=>j.roleIds.includes('fintech-backend')).length);
   await click("#jd-library .jd-card summary");
-  assert.ok(await evaluate("(()=>{const card=document.querySelector('#jd-library .jd-card');return card.open&&card.querySelector('.jd-body h4').textContent.includes('资格')&&card.querySelector('.jd-meta').textContent.includes('核查')&&card.querySelector('.jd-original').href.startsWith('https://');})()"));
+  assert.ok(await evaluate("(()=>{const card=document.querySelector('#jd-library .jd-card');return card.open&&card.querySelector('.jd-body h4').textContent.includes('资格')&&card.querySelector('.jd-original').href.startsWith('https://');})()"));
   await click('[data-group="all"]');
-  await evaluate("document.querySelector('#global-search').value='闭包';document.querySelector('#global-search').dispatchEvent(new Event('input',{bubbles:true}))");
-  assert.ok((await queryIds(".skill-card")).includes("typescript"), "Search should include concrete knowledge points");
-  assert.ok((await queryIds(".skill-card")).length < data.skills.length);
+  await evaluate("document.querySelector('#global-search').value='迭代器失效';document.querySelector('#global-search').dispatchEvent(new Event('input',{bubbles:true}))");
+  assert.ok((await queryIds('.skill-card')).includes('cpp'),"Search must include concrete topics");
+  assert.ok((await queryIds('.skill-card')).length<data.skills.length);
+  assert.equal(await evaluate("document.querySelector('#skill-library-details').open"),true);
   await evaluate("document.querySelector('#global-search').value='';document.querySelector('#global-search').dispatchEvent(new Event('input',{bubbles:true}))");
-  await send("Page.reload", { ignoreCache: true });
-  await ready();
-  assert.equal(await evaluate("document.querySelector('#progress-status').value"), "verified", "Progress and selected skill should survive reload");
-  assert.equal(await evaluate("document.querySelector('#path-role').value"), "mobile", "Shared role URL should restore role");
-  await click("#progress-filter");
-  assert.equal(await evaluate("document.querySelectorAll('.skill-card').length"), data.skills.length - 1);
-  await click("#progress-filter");
-  await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
-  await click("#export-progress");
-  const exportedFile = path.join(downloads, "career-skill-atlas-progress.json");
-  await until(() => fs.existsSync(exportedFile), "exported progress file");
-  const exported = JSON.parse(fs.readFileSync(exportedFile, "utf8"));
-  assert.equal(exported.version, 1); assert.equal(exported.skills.rag, "verified");
+  await send("Page.reload",{ignoreCache:true});await ready();
+  assert.equal(await evaluate("document.querySelector('#path-role').value"),"backend");
+  await click("#progress-filter");assert.equal(await evaluate("document.querySelectorAll('.skill-card').length"),data.skills.length-2);await click("#progress-filter");
+  await evaluate("document.querySelector('#skill-library-details').open=true");
+  await send("Browser.setDownloadBehavior",{behavior:"allow",downloadPath:downloads});await click("#export-progress");
+  const exportedFile=path.join(downloads,"career-skill-atlas-progress.json");await until(()=>fs.existsSync(exportedFile),"exported progress file");
+  const exported=JSON.parse(fs.readFileSync(exportedFile,"utf8"));assert.equal(exported.version,1);assert.equal(exported.skills.rag,"verified");
   async function importFile(content) {
     await evaluate("document.querySelector('#progress-message').textContent=''");
-    await evaluate("(()=>{const transfer=new DataTransfer();transfer.items.add(new File([" + JSON.stringify(content) + "],'progress.json',{type:'application/json'}));const input=document.querySelector('#import-progress');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()");
-    await until(() => evaluate("document.querySelector('#progress-message').textContent.length>0"), "import result");
+    await evaluate("(()=>{const transfer=new DataTransfer();transfer.items.add(new File(["+JSON.stringify(content)+"],'progress.json',{type:'application/json'}));const input=document.querySelector('#import-progress');input.files=transfer.files;input.dispatchEvent(new Event('change',{bubbles:true}));})()");
+    await until(()=>evaluate("document.querySelector('#progress-message').textContent.length>0"),"import result");
     return evaluate("document.querySelector('#progress-message').textContent");
   }
-  assert.ok((await importFile(JSON.stringify({ version: 1, skills: { git: "learning" } }))).includes("已合并 1"));
-  assert.deepEqual(await evaluate("JSON.parse(localStorage.getItem('career-skill-atlas-progress-v1'))"), { rag: "verified", git: "learning" });
+  assert.ok((await importFile(JSON.stringify({version:1,skills:{git:"verified"}}))).includes("已合并 1"));
+  assert.deepEqual(await evaluate("JSON.parse(localStorage.getItem('career-skill-atlas-progress-v1'))"),{git:"verified",rag:"verified"});
   assert.ok((await importFile("broken json")).includes("导入失败"));
   assert.ok((await importFile("null")).includes("格式不正确"));
-  assert.ok((await importFile(JSON.stringify({ version: 1, skills: { rag: "invalid" } }))).includes("导入失败"));
-  assert.equal(await evaluate("JSON.parse(localStorage.getItem('career-skill-atlas-progress-v1')).rag"), "verified");
-  await evaluate("document.activeElement.blur()");
-  await send("Input.dispatchKeyEvent", { type: "keyDown", key: "/", code: "Slash", windowsVirtualKeyCode: 191 });
-  assert.equal(await evaluate("document.activeElement.id"), "global-search");
-  await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
+  assert.ok((await importFile(JSON.stringify({version:1,skills:{rag:"invalid"}}))).includes("导入失败"));
+  await evaluate("document.activeElement.blur()");await key("/","Slash",191);
+  assert.equal(await evaluate("document.activeElement.id"),"global-search");
+
+  await click("#reset-network");
+  await send("Emulation.setEmulatedMedia",{features:[{name:"prefers-reduced-motion",value:"reduce"}]});
   assert.ok(await evaluate("matchMedia('(prefers-reduced-motion:reduce)').matches&&getComputedStyle(document.documentElement).scrollBehavior==='auto'"));
-  const layouts = [];
-  for (const width of [375, 390, 768, 1024, 1440]) {
-    await metrics(width, width < 760 ? 844 : 900);
-    const layout = await evaluate("({width:innerWidth,documentWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})");
-    if (layout.documentWidth > layout.clientWidth) {
-      await screenshot("overflow-" + width, "#network");
-      console.error(await evaluate("[...document.querySelectorAll('body *')].filter(el=>{const r=el.getBoundingClientRect();return r.right>document.documentElement.clientWidth+1&&r.width>0&&!el.closest('.network-viewport')}).slice(0,20).map(el=>({tag:el.tagName,class:el.className,width:el.getBoundingClientRect().width,right:el.getBoundingClientRect().right}))"));
-    }
-    assert.ok(layout.documentWidth <= layout.clientWidth, "Page horizontal overflow: " + JSON.stringify(layout));
-    layouts.push(layout);
+  await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'});document.activeElement.blur()");
+  await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:2,y:2});
+  const reduced=await orientation();await wait(200);assert.equal(await orientation(),reduced);
+  assert.ok(await evaluate("document.querySelector('#toggle-rotation').disabled&&document.querySelector('#knowledge-network').dataset.rotating==='false'"));
+  const layouts=[];
+  for(const [width,height] of [[375,844],[390,844],[768,900],[844,390],[1024,900],[1440,900]]) {
+    await metrics(width,height);
+    await readableLabels('Layout '+width);
+    const layout=await evaluate("({width:innerWidth,documentWidth:document.documentElement.scrollWidth,clientWidth:document.documentElement.clientWidth})");
+    if(layout.documentWidth>layout.clientWidth)await screenshot("overflow-"+width,"#network");
+    assert.ok(layout.documentWidth<=layout.clientWidth,"Page horizontal overflow: "+JSON.stringify(layout));layouts.push(layout);
   }
-  await metrics(390, 844);
-  await send("Page.navigate", { url: origin + "/?role=ai-app&skill=rag" });
-  await ready();
-  assert.ok(await evaluate("document.querySelector('#network-viewport').hidden&&!document.querySelector('#network-list').hidden"), "Phone should start with readable relationship list");
-  await screenshot("mobile-overview");
-  await screenshot("mobile-relationships", "#network");
-  await screenshot("mobile-path", "#roadmap");
+  await metrics(390,844);await send("Page.navigate",{url:origin});await ready();
+  assert.ok(await evaluate("document.querySelector('#network-viewport').hidden&&!document.querySelector('#network-list').hidden"),"Phone should initially show the hierarchy list");
+  await screenshot("mobile-overview");await screenshot("mobile-concepts","#network");
+  await click('.adjacency-title[data-map-id="trading-research"]');
+  await click('.adjacency-title[data-map-id="event-engine"]');
+  await click('.adjacency-title[data-map-id="orderbook"]');
+  await screenshot("mobile-topics","#network");
   await click('[data-network-view="graph"]');
-  assert.ok(await evaluate("!document.querySelector('#network-viewport').hidden&&document.querySelector('#network-viewport').scrollWidth>document.querySelector('#network-viewport').clientWidth"), "Wide graph should scroll inside its panel");
-  await click("#zoom-in");
-  assert.ok(await evaluate("parseFloat(document.querySelector('#knowledge-network').style.width)>1200"));
-  await click('[data-pan="220,0"]');
-  await until(() => evaluate("document.querySelector('#network-viewport').scrollLeft>0"), "pan alternative to dragging");
-  await send("Page.navigate", { url: origin + "/?role=__proto__&skill=toString" });
-  await ready();
-  assert.equal(await evaluate("document.querySelector('#selection-kicker').textContent"), "ALL ROLES", "Unknown link selections should fall back to the full map");
-  assert.deepEqual(browserErrors, [], "Browser JavaScript and local resource errors");
-  console.log(JSON.stringify({ desktop: initial, pathChoices: ["TypeScript AI application", "Swift iOS"], keyboard: "passed", search: "passed", progressReloadExportImport: "passed", jdDetails: "passed", relationshipList: "passed", layouts, reducedMotion: "passed", browserErrors, screenshots }, null, 2));
+  assert.ok(await evaluate("(()=>{const v=document.querySelector('#network-viewport');return !v.hidden&&v.scrollWidth===v.clientWidth&&document.querySelectorAll('.sphere-node').length===5;})()"),"Phone sphere must fit its own panel");
+  await click("#zoom-in");assert.ok(await evaluate("Number(document.querySelector('#knowledge-network').dataset.zoom)>1"));
+  await screenshot("mobile-sphere-topics","#network-viewport");
+  await readableLabels('Phone learning topics');
+  await pointerActivate('orderbook:0');
+  assert.ok(await evaluate("(()=>{const r=document.querySelector('#topic-focus').getBoundingClientRect(),header=document.querySelector('.site-header').getBoundingClientRect();return !document.querySelector('#topic-focus').hidden&&r.top>=header.bottom&&r.bottom<innerHeight;})()"),'Phone topic activation should reveal its detail below the header');
+  await screenshot('mobile-topic-detail','#skill-detail');
+  await click("#reset-network");await screenshot("mobile-sphere-concepts","#network-viewport");
+  await readableLabels('Phone concepts');
+  for(let turn=0;turn<6;turn++) {
+    await click('[data-rotate=".24,0"]');
+    await readableLabels('Phone rotated '+turn);
+  }
+  await pointerActivate('workflow');assert.equal(await level(),'02 / MODULES','Phone labels should receive real pointer clicks');
+  await send("Page.navigate",{url:origin+"/?role=quant-dev&skill=cpp"});await ready();
+  assert.equal(await evaluate("document.querySelector('#path-role').value"),"cpp-systems","Old role bookmarks should resolve");
+  assert.equal(await level(),"04 / LEARNING TOPICS");
+  await send("Page.navigate",{url:origin+"/?role=__proto__&domain=__proto__&module=toString&skill=toString"});await ready();
+  assert.equal(await level(),"01 / CONCEPTS");assert.equal(await evaluate("document.querySelector('#selection-kicker').textContent"),"ALL ROLES");
+  assert.deepEqual(browserErrors,[],"Browser JavaScript and local resource errors");
+  console.log(JSON.stringify({desktop:initial,hierarchy:"four levels, breadcrumbs, browser back/forward",sphere:"automatic rotation, pause, keyboard, real pointer clicks, drag, zoom, readable labels",prerequisiteSkills:closure.size,progressV1ReloadExportImport:"passed",searchAndJd:"passed",layouts,reducedMotion:"passed",browserErrors,screenshots},null,2));
 }
 main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; }).finally(async () => {
   if (socket) socket.close();

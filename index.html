@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="面向计算机实习岗位的技能拆解、知识架构与交互式知识网络。">
+  <meta name="description" content="沿 C++、Linux、数据与后端主线，以可逐层展开的 3D 球状地图构建个人实习知识体系。">
   <title>Career Skill Atlas · 计算机实习知识地图</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=1.1.0">
+  <link rel="stylesheet" href="styles.css?v=1.2.0">
 </head>
 <body>
   <a class="skip-link" href="#main">跳到主要内容</a>
@@ -32,39 +32,53 @@
       <div class="hero-copy">
         <p class="eyebrow">BUILD YOUR OWN COMPUTING SYSTEM</p>
         <h1>把“想学计算机”<br><span>变成一张可走的地图。</span></h1>
-        <p class="hero-lede">从实习岗位倒推能力，把零散知识连接成共同底座、项目证据与方向分支。选择一个岗位，查看具体知识点、学习顺序和官方 JD 样例，建立自己的计算机知识体系。</p>
+        <p class="hero-lede">沿着 C++ → Linux 与网络 → 数据库 → 订单簿项目这条主线，建立共同底座，再选择后端、AI 应用或研究分支。先看大概念，逐层打开你要学的具体内容。</p>
         <div class="hero-actions"><a class="button button-primary" href="#roles">探索岗位</a><a class="button button-ghost" href="#network">打开知识网络 <span aria-hidden="true">→</span></a></div>
-        <p class="hero-note">覆盖常见方向与专项分支，未按招聘数量排名。通用准备模型与官方 JD 样例分别标明；样例含海外与香港岗位，具体资格、批次和开放状态以原文为准。</p>
+        <p class="hero-note">依据两份 2026-10-17 学习路线收拢为六个方向。量化研究为长期补充，GPU 为完成主线后的选修探索。JD 样例含海外与香港岗位，具体资格和开放状态以原文为准。</p>
       </div>
       <div class="hero-signal" aria-label="知识地图摘要">
         <div class="signal-orbit orbit-one"></div><div class="signal-orbit orbit-two"></div>
-        <div class="signal-core"><span class="signal-kicker">KNOWLEDGE<br>GRAPH</span><strong id="hero-role-count">17</strong><span>岗位画像</span></div>
+        <div class="signal-core"><span class="signal-kicker">PERSONAL<br>KNOWLEDGE MAP</span><strong id="hero-role-count">6</strong><span>聚焦岗位方向</span></div>
         <div class="signal-label label-top"><b>01</b><span>共同底座</span></div><div class="signal-label label-right"><b>02</b><span>可验证作品</span></div><div class="signal-label label-bottom"><b>03</b><span>方向分支</span></div>
       </div>
     </section>
     <section class="stats-strip section-shell" aria-label="地图统计">
-      <div class="stat-item"><strong id="stat-roles">17</strong><span>常见岗位画像</span></div><div class="stat-item"><strong id="stat-skills">83</strong><span>可拆解技能节点</span></div><div class="stat-item"><strong id="stat-edges">—</strong><span>知识前置关系</span></div><div class="stat-item"><strong id="stat-jds">18</strong><span>官方 JD 样例，含相邻方向</span></div>
+      <div class="stat-item"><strong id="stat-roles">6</strong><span>聚焦岗位方向</span></div><div class="stat-item"><strong id="stat-skills">69</strong><span>按层展开的技能</span></div><div class="stat-item"><strong id="stat-edges">—</strong><span>知识前置关系</span></div><div class="stat-item"><strong id="stat-jds">12</strong><span>官方 JD 对照，含相邻方向</span></div>
     </section>
     <section class="section-shell explorer-section" id="roles">
       <div class="section-heading"><div><p class="eyebrow">01 / ROLE EXPLORER</p><h2>先从岗位倒推学习顺序</h2></div><p class="section-intro">岗位不是课程清单。先看实习生会交付什么，再决定哪些知识必须深入，哪些知识只需要建立工作理解。</p></div>
       <div class="application-note"><span class="application-icon" aria-hidden="true">i</span><span><strong>先核对资格，再准备技术。</strong> 实习招聘常把在校状态、毕业年份、连续实习周期、每周到岗天数、工作地点和专业方向列为硬条件；这些信息随公司、团队和招聘批次变化，必须以具体 JD 为准。</span></div>
       <div class="filter-bar" role="region" aria-label="岗位筛选">
         <label class="search-field"><span class="sr-only">搜索岗位或技能</span><span class="search-icon" aria-hidden="true">/</span><input id="global-search" type="search" placeholder="搜索岗位、技能或关键词" autocomplete="off"></label>
-        <div class="filter-chips" id="group-filters" role="group" aria-label="岗位方向"><button class="chip is-active" type="button" data-group="all" aria-pressed="true">全部岗位</button><button class="chip" type="button" data-group="software" aria-pressed="false">软件与系统</button><button class="chip" type="button" data-group="data-ai" aria-pressed="false">数据与 AI</button><button class="chip" type="button" data-group="infra" aria-pressed="false">云与基础设施</button><button class="chip" type="button" data-group="security" aria-pressed="false">安全与终端</button></div>
+        <div class="filter-chips" id="group-filters" role="group" aria-label="岗位方向"><button class="chip is-active" type="button" data-group="all" aria-pressed="true">全部六个方向</button><button class="chip" type="button" data-group="software" aria-pressed="false">系统与后端</button><button class="chip" type="button" data-group="data-ai" aria-pressed="false">AI 应用与研究</button><button class="chip" type="button" data-group="infra" aria-pressed="false">GPU 探索</button></div>
       </div>
       <div class="role-layout"><div class="role-grid" id="role-grid" aria-live="polite"></div><aside class="selection-panel" id="selection-panel" aria-live="polite"><div class="panel-kicker">SELECTION / <span id="selection-kicker">ALL ROLES</span></div><div id="selection-content"><h3>选择一个岗位</h3><p>点击岗位卡片，查看实习生常见交付、必备技能、作品证据和面试信号。也可以直接在知识网络中点击一个节点。</p><div class="panel-tip"><span class="tip-line"></span><span>建议先选一个你愿意投入 8—12 周验证的方向。</span></div></div></aside></div>
     </section>
     <section class="section-shell network-section" id="network">
-      <div class="section-heading"><div><p class="eyebrow">02 / KNOWLEDGE NETWORK</p><h2>看见技能之间的依赖关系</h2></div><div class="network-controls"><label for="network-layer">显示层级</label><select id="network-layer"><option value="all">全部层级</option><option value="foundation">工具与基础</option><option value="engineering">工程与系统</option><option value="data">数据与 AI</option><option value="specialization">岗位分支</option></select><button class="text-button" id="zoom-out" type="button" aria-label="缩小知识网络">−</button><button class="text-button" id="zoom-in" type="button" aria-label="放大知识网络">+</button><button class="text-button" id="reset-network" type="button">重置视图</button></div></div>
-      <div class="network-view-bar"><div class="view-switch" role="group" aria-label="知识网络展示方式"><button type="button" data-network-view="graph" aria-pressed="true">图谱视图</button><button type="button" data-network-view="list" aria-pressed="false">关系清单</button></div><button class="progress-filter" id="trace-dependencies" type="button" aria-pressed="false" disabled>聚焦所选节点前置链</button><p id="network-summary" role="status"></p></div>
-      <p class="graph-description" id="network-help">箭头：前置知识 → 后续技能。岗位直接关联节点为实线边框，路径基础和补齐的前置项为虚线边框；✓ 表示已实现并验证。图谱支持键盘选择，关系清单逐项列出相同节点与前置项。</p>
-      <div class="network-layout"><div class="network-card"><div class="network-toolbar"><span><i class="legend-dot legend-foundation"></i>01 基础</span><span><i class="legend-dot legend-engineering"></i>02 工程</span><span><i class="legend-dot legend-data"></i>03 数据 / AI</span><span><i class="legend-dot legend-specialization"></i>04 分支</span><span class="network-hint">点节点看详情 · Ctrl+滚轮缩放</span></div><div class="network-viewport" id="network-viewport" tabindex="0" role="region" aria-label="可滚动的知识图谱" aria-describedby="network-help"><svg id="knowledge-network" viewBox="0 0 1400 1100" role="group" aria-label="计算机实习技能知识网络" aria-describedby="network-help"></svg></div><div id="network-list" class="network-list" role="region" aria-label="知识节点与前置关系清单" hidden></div><div class="graph-pan" role="group" aria-label="图谱平移"><span>移动图谱</span><button type="button" data-pan="-220,0" aria-label="向左移动图谱">←</button><button type="button" data-pan="0,-200" aria-label="向上移动图谱">↑</button><button type="button" data-pan="0,200" aria-label="向下移动图谱">↓</button><button type="button" data-pan="220,0" aria-label="向右移动图谱">→</button><span>也可滚动或用鼠标拖动</span></div></div><aside class="skill-detail" id="skill-detail" aria-live="polite"><div class="panel-kicker">NODE INSPECTOR</div><div id="skill-detail-content"><span class="detail-placeholder">选择一个技能节点<br>查看它在体系中的位置。</span></div></aside></div>
+      <div class="section-heading"><div><p class="eyebrow">02 / EXPLORE YOUR KNOWLEDGE</p><h2>看见技能之间的依赖关系</h2></div><p class="section-intro">从大概念进入模块，再打开技能和具体内容。一次只看当前这一层。</p></div>
+      <div class="network-view-bar"><div class="view-switch" role="group" aria-label="知识网络展示方式"><button type="button" data-network-view="graph" aria-pressed="true">3D 球状图谱</button><button type="button" data-network-view="list" aria-pressed="false">分层清单</button></div><button class="progress-filter" id="trace-dependencies" type="button" aria-pressed="false" disabled>查看所选技能前置链</button><p id="network-summary" role="status"></p></div>
+      <div class="map-navigation"><button class="text-button map-back" type="button" id="map-back" disabled>← 返回上层</button><nav id="network-breadcrumbs" aria-label="知识地图位置"></nav></div>
+      <div class="network-layout">
+        <div class="network-card">
+          <div class="map-heading"><div><p class="eyebrow" id="network-level-kicker">01 / CONCEPTS</p><h3 id="network-level-title" tabindex="-1">知识概念总览</h3><p id="network-level-description">每个球面节点是一块大知识范围。选一个概念，展开下一层。</p></div><span class="sphere-edition" aria-hidden="true">EXPLORE<br>ONE LEVEL<br>AT A TIME</span></div>
+          <div class="network-toolbar"><span class="sphere-indicator" aria-hidden="true"></span><span>拖动旋转 · 点击展开</span><button type="button" class="progress-filter" id="toggle-rotation" aria-pressed="false">暂停自动旋转</button></div>
+          <div class="network-viewport" id="network-viewport" tabindex="0" role="region" aria-label="可旋转的 3D 球状知识地图" aria-describedby="network-help"><svg id="knowledge-network" viewBox="0 0 900 600" role="group" aria-label="知识概念球体" aria-describedby="network-help"></svg></div>
+          <div id="network-list" class="network-list" role="region" aria-label="逐层知识清单" hidden></div>
+          <div id="network-empty" class="network-empty" hidden><p>当前层级没有符合筛选的内容。</p><button type="button" class="progress-filter" id="clear-map-filter">清除筛选，回到总览</button></div>
+          <div class="graph-pan" role="group" aria-label="球体旋转与缩放"><span>旋转</span><button type="button" data-rotate="-.24,0" aria-label="向左旋转球体">←</button><button type="button" data-rotate="0,-.24" aria-label="向上旋转球体">↑</button><button type="button" data-rotate="0,.24" aria-label="向下旋转球体">↓</button><button type="button" data-rotate=".24,0" aria-label="向右旋转球体">→</button><button type="button" id="zoom-out" aria-label="缩小球体">−</button><button type="button" id="zoom-in" aria-label="放大球体">+</button><button type="button" class="reset-camera" id="reset-camera">复位</button></div>
+          <div class="network-controls"><label for="network-layer">筛选技能层级</label><select id="network-layer"><option value="all">全部层级</option><option value="foundation">工具与基础</option><option value="engineering">工程与系统</option><option value="data">数据与 AI</option><option value="specialization">方向分支</option></select><button class="text-button" id="reset-network" type="button">回到完整总览</button></div>
+        </div>
+        <aside class="skill-detail" id="skill-detail" aria-live="polite"><div class="panel-kicker">LEARNING INSPECTOR</div><div id="skill-detail-content"><span class="detail-placeholder">选择一个大概念，开始探索。</span></div></aside>
+      </div>
+      <p class="graph-description" id="network-help">箭头汇总分组间的“前置 → 后续”关系；具体依赖在技能详情内列出。拖动或方向键旋转，使用按钮或 Ctrl+滚轮缩放；触屏横向滑动旋转、纵向滚动页面。可随时切换分层清单，系统开启减少动画时不自动旋转。</p>
     </section>
     <section class="section-shell library-section" id="library">
-      <div class="section-heading"><div><p class="eyebrow">03 / SKILL LIBRARY</p><h2>知识节点的最小解释单元</h2></div><p class="section-intro">每个节点都给出学习目的、前置关系、练习出口和岗位关联。它们是你以后逐项追问“去哪学、怎么学”的索引。</p></div>
+      <div class="section-heading"><div><p class="eyebrow">03 / SKILL INDEX</p><h2>需要时，再打开完整索引</h2></div><p class="section-intro">也可以搜索具体技能。这里保留学习理由、依赖关系、岗位关联和验证成果，供你逐项追问“去哪学、怎么学”。</p></div>
+      <details id="skill-library-details" class="skill-library-details"><summary>展开完整技能索引与学习进度</summary>
       <div class="library-toolbar"><div class="layer-tabs" id="layer-tabs" role="group" aria-label="知识层级"><button class="layer-tab is-active" type="button" data-layer="all" aria-pressed="true">全部</button><button class="layer-tab" type="button" data-layer="foundation" aria-pressed="false">工具与基础</button><button class="layer-tab" type="button" data-layer="engineering" aria-pressed="false">工程与系统</button><button class="layer-tab" type="button" data-layer="data" aria-pressed="false">数据与 AI</button><button class="layer-tab" type="button" data-layer="specialization" aria-pressed="false">方向分支</button></div><div class="library-counts"><button class="progress-filter" id="progress-filter" type="button" aria-pressed="false">只看待学</button><span class="result-count" id="skill-count"></span><span class="result-count" id="progress-count"></span></div></div>
       <div class="progress-tools"><button class="progress-filter" id="export-progress" type="button">导出进度</button><label class="progress-filter progress-import">导入进度<input id="import-progress" class="sr-only" type="file" accept="application/json,.json"></label><span>进度保存在当前浏览器；导出文件可迁移到其他设备。</span><p id="progress-message" role="status"></p></div>
       <div class="skill-grid" id="skill-grid"></div>
+      </details>
     </section>
     <section class="section-shell roadmap-section" id="roadmap">
       <div class="section-heading"><div><p class="eyebrow">04 / LEARNING PATH</p><h2>为目标岗位排列一条学习路径</h2></div><p class="section-intro">先选主修方向和一条技术栈，再沿先修基础、岗位核心、项目验证和进阶方向推进。路径是可调整的准备建议，节点勾选不等于录用评估。</p></div>
@@ -72,10 +86,10 @@
       <div id="role-roadmap" class="role-roadmap"></div>
     </section>
     <section class="section-shell evidence-section" id="evidence"><div class="section-heading"><div><p class="eyebrow">05 / JD EVIDENCE</p><h2>把能力模型对照招聘原文</h2></div><p class="section-intro">官方样例保留资格、明示技能、加分项、原文短摘与核查日期。样本主要来自海外与香港招聘，包含研究岗位和方向汇总，用于理解差异，不能推算中国岗位热度或统一门槛。</p></div><div class="evidence-toolbar"><label for="jd-role-filter">按关联方向筛选<select id="jd-role-filter"><option value="all">全部官方样例</option></select></label><span id="jd-count" role="status"></span></div><div id="jd-library" class="jd-library"></div></section>
-    <section class="section-shell sources-section" id="sources"><div class="source-box"><div><p class="eyebrow">REFERENCE NOTES</p><h2>如何使用这张地图</h2><p>用岗位画像确定准备范围，用依赖网络找到先修项，用项目留下可复现的证据。官方 JD 样例单独保留来源和核查日期；下面的职业词典、趋势资料、技术文档与招聘搜索入口承担不同参考用途。</p><div class="doc-shortcuts"><a href="docs/ROLE_REQUIREMENTS.md">阅读 17 类岗位拆解 <span aria-hidden="true">↗</span></a><a href="docs/KNOWLEDGE_ARCHITECTURE.md">阅读知识体系说明 <span aria-hidden="true">↗</span></a><a href="docs/JD_EVIDENCE.md">阅读官方 JD 证据 <span aria-hidden="true">↗</span></a><a href="docs/SKILL_NETWORK.md">阅读完整知识点与关系表 <span aria-hidden="true">↗</span></a></div></div><div class="source-links" id="source-links"></div></div></section>
+    <section class="section-shell sources-section" id="sources"><div class="source-box"><div><p class="eyebrow">REFERENCE NOTES</p><h2>如何使用这张地图</h2><p>按“2026-10-17_学习路线与资源清单”和“2026-10-17_分阶段学习路线”组织概念与岗位。先完成共同底座和订单簿，再选应用分支；量化研究长期积累，GPU 完成主线后再探索。官方 JD 保留各自来源和核查日期。</p><div class="doc-shortcuts"><a href="docs/ROLE_REQUIREMENTS.md">阅读六个方向的岗位拆解 <span aria-hidden="true">↗</span></a><a href="docs/KNOWLEDGE_ARCHITECTURE.md">阅读知识体系说明 <span aria-hidden="true">↗</span></a><a href="docs/JD_EVIDENCE.md">阅读官方 JD 对照 <span aria-hidden="true">↗</span></a><a href="docs/SKILL_NETWORK.md">阅读分层知识点与关系表 <span aria-hidden="true">↗</span></a></div></div><div class="source-links" id="source-links"></div></div></section>
     <noscript><p class="section-shell">交互地图需要 JavaScript。你可以直接阅读 <a href="docs/ROLE_REQUIREMENTS.md">岗位拆解</a>和<a href="docs/SKILL_NETWORK.md">完整知识点清单</a>。</p></noscript>
   </main>
   <footer class="site-footer"><div class="footer-inner"><span>CAREER SKILL ATLAS / PERSONAL KNOWLEDGE SYSTEM</span><a href="https://github.com/Vincent-ai123/git" target="_blank" rel="noreferrer">GitHub repository ↗</a></div></footer>
-  <script src="data.js?v=1.1.0"></script><script src="app.js?v=1.1.0"></script>
+  <script src="data.js?v=1.2.0"></script><script src="sphere.js?v=1.2.0"></script><script src="app.js?v=1.2.0"></script>
 </body>
 </html>
