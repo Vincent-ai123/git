@@ -93,10 +93,10 @@ async function main() {
   await send("Page.navigate", { url: origin });
   await ready();
   await evaluate("document.fonts.ready.then(()=>true)");
-  const nodeIds = () => evaluate("[...document.querySelectorAll('.sphere-node')].map(el=>el.dataset.nodeId).sort()");
+  const nodeIds = () => evaluate("[...document.querySelectorAll('.map-node')].map(el=>el.dataset.nodeId).sort()");
   const listIds = () => evaluate("[...document.querySelectorAll('.adjacency-title')].map(el=>el.dataset.mapId).sort()");
   const level = () => evaluate("document.querySelector('#network-level-kicker').textContent");
-  const orientation = () => evaluate("document.querySelector('#knowledge-network').dataset.orientation");
+  const pan = () => evaluate("document.querySelector('#knowledge-network').dataset.pan");
   async function readableLabels(context) {
     await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'})");
     await wait(120);
@@ -104,12 +104,25 @@ async function main() {
     await send('Page.captureScreenshot',{format:'png'});
     const issues=await evaluate(`(()=>{
       const viewport=document.querySelector('#knowledge-network').getBoundingClientRect();
-      const labels=[...document.querySelectorAll('.sphere-label-bg')].map(el=>({id:el.closest('.sphere-node').dataset.nodeId,box:el.getBoundingClientRect()}));
+      const labels=[...document.querySelectorAll('.map-node-bg')].map(el=>({id:el.closest('.map-node').dataset.nodeId,box:el.getBoundingClientRect()}));
       const issues=[];
+      for(const card of document.querySelectorAll('.map-node-content')) {
+        if(card.scrollHeight>card.clientHeight+1)issues.push('text clipped '+card.querySelector('strong').textContent);
+        if(card.querySelector('strong').scrollWidth>card.querySelector('strong').clientWidth+1)issues.push('title clipped '+card.querySelector('strong').textContent);
+      }
       for(let i=0;i<labels.length;i++) {
         const a=labels[i];
         if(a.box.left<viewport.left-1||a.box.right>viewport.right+1||a.box.top<viewport.top-1||a.box.bottom>viewport.bottom+1)issues.push('clipped '+a.id);
         for(const b of labels.slice(i+1))if(Math.min(a.box.right,b.box.right)-Math.max(a.box.left,b.box.left)>1&&Math.min(a.box.bottom,b.box.bottom)-Math.max(a.box.top,b.box.top)>1)issues.push(a.id+' overlaps '+b.id);
+      }
+      // Sample actual rendered paths, excluding their endpoints, to catch edges hidden by unrelated cards.
+      for(const edge of document.querySelectorAll('.map-edge')) {
+        const length=edge.getTotalLength();
+        for(let step=1;step<40;step++) {
+          const point=edge.getPointAtLength(length*step/40).matrixTransform(edge.getScreenCTM());
+          const hit=labels.find(node=>node.id!==edge.dataset.from&&node.id!==edge.dataset.to&&point.x>node.box.left+1&&point.x<node.box.right-1&&point.y>node.box.top+1&&point.y<node.box.bottom-1);
+          if(hit){issues.push('edge '+edge.dataset.from+' > '+edge.dataset.to+' crosses '+hit.id);break;}
+        }
       }
       return {issues,viewport:viewport.toJSON(),viewBox:document.querySelector('#knowledge-network').getAttribute('viewBox'),labels:labels.map(l=>({id:l.id,box:l.box.toJSON()}))};
     })()`);
@@ -121,8 +134,9 @@ async function main() {
     assert.deepEqual(issues.issues,[],context+' labels should fit without overlap');
   }
   async function pointerActivate(id) {
-    const selector='.sphere-node[data-node-id="'+id+'"] .sphere-label-bg';
+    const selector='.map-node[data-node-id="'+id+'"] .map-node-bg';
     await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'})");
+    await evaluate("document.querySelector("+JSON.stringify(selector)+").scrollIntoView({behavior:'instant',block:'nearest',inline:'nearest'})");
     const point=await evaluate("(()=>{const r=document.querySelector("+JSON.stringify(selector)+").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()");
     await send('Input.dispatchMouseEvent',{type:'mouseMoved',...point});
     await send('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
@@ -133,43 +147,49 @@ async function main() {
     await send("Input.dispatchKeyEvent", { type:"keyUp", key, code, windowsVirtualKeyCode:virtual });
   }
   async function activate(id, kind = "domain") {
-    const selector='.sphere-node[data-node-kind="'+kind+'"][data-node-id="'+id+'"]';
+    const selector='.map-node[data-node-kind="'+kind+'"][data-node-id="'+id+'"]';
     await evaluate("document.querySelector("+JSON.stringify(selector)+").focus({preventScroll:true})");
     await key("Enter","Enter",13);
   }
-  const initial = await evaluate("({roles:document.querySelectorAll('.role-card').length,skills:document.querySelectorAll('.skill-card').length,nodes:document.querySelectorAll('.sphere-node').length,jds:document.querySelectorAll('#jd-library .jd-card').length})");
+  const initial = await evaluate("({roles:document.querySelectorAll('.role-card').length,skills:document.querySelectorAll('.skill-card').length,nodes:document.querySelectorAll('.map-node').length,jds:document.querySelectorAll('#jd-library .jd-card').length})");
   assert.deepEqual(initial, {roles:data.roles.length,skills:data.skills.length,nodes:data.domains.length,jds:data.jdEvidence.length});
   assert.deepEqual(await nodeIds(), data.domains.map(d=>d.id).sort());
   assert.deepEqual(await listIds(), await nodeIds());
   assert.equal(await evaluate("document.querySelector('#skill-library-details').open"),false,"Full skill library should start collapsed");
-  assert.ok(await evaluate("document.querySelectorAll('.sphere-wire path').length>=6 && [...document.querySelectorAll('.sphere-node')].every(n=>n.getAttribute('transform').includes('translate'))"),"Sphere must contain projected geometry");
-  for (const asset of ["/","/app.js","/sphere.js","/data.js","/styles.css"]) assert.equal(localRequests.get(asset),200,"App asset did not load: "+asset);
+  assert.ok(await evaluate("document.querySelectorAll('.map-edge').length>0 && [...document.querySelectorAll('.map-node')].every(n=>n.querySelector('strong').textContent.length>0)"),"Map should show named nodes and dependencies");
+  for (const asset of ["/","/app.js","/map.js","/data.js","/styles.css"]) assert.equal(localRequests.get(asset),200,"App asset did not load: "+asset);
   await screenshot("desktop-overview");
   await screenshot("desktop-concepts","#network");
-  await screenshot("desktop-sphere",".network-card");
+  await screenshot("desktop-map",".network-card");
   await readableLabels('Desktop concepts');
 
-  // Check motion and controls on the rendered scene, including a real pointer drag.
+  // Nodes stay still while reading; reveal dependencies on focus, then test real input.
   await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'});document.activeElement.blur()");
   await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:2,y:2});
-  await until(()=>evaluate("document.querySelector('#knowledge-network').dataset.rotating==='true'"),"automatic sphere rotation");
-  const autoBefore=await orientation();await wait(250);
-  assert.notEqual(await orientation(),autoBefore,"Sphere should actually animate");
-  await click("#toggle-rotation");
-  const paused=await orientation();await wait(150);
-  assert.equal(await orientation(),paused,"Pause button should stop rotation");
-  await click('[data-rotate=".24,0"]');assert.notEqual(await orientation(),paused);
+  const still=await pan();await wait(250);assert.equal(await pan(),still,"Map must stay still while reading");
+  await click('#toggle-relations');
+  assert.ok(await evaluate("document.querySelector('#knowledge-network').classList.contains('show-all-edges')&&document.querySelector('#toggle-relations').getAttribute('aria-pressed')==='true'"));
+  await click('#toggle-relations');
+  await evaluate("document.querySelector('.map-node').focus({preventScroll:true})");
+  assert.ok(await evaluate("document.querySelectorAll('.map-edge.is-active').length>0&&document.querySelector('#knowledge-network').classList.contains('has-highlight')"));
+  const firstFocus=await evaluate("document.activeElement.dataset.nodeId");
+  await key('ArrowRight','ArrowRight',39);
+  assert.notEqual(await evaluate("document.activeElement.dataset.nodeId"),firstFocus,"Arrow keys should move between nodes");
+  await screenshot('desktop-dependencies','#network');
   await click("#zoom-in");assert.ok(await evaluate("Number(document.querySelector('#knowledge-network').dataset.zoom)>1"));
+  for(let i=0;i<4;i++)await click('#zoom-in');
+  assert.equal(await evaluate("document.querySelector('#knowledge-network').dataset.zoom"),'1.60');
+  assert.ok(await evaluate("(()=>{const v=document.querySelector('#network-viewport');v.scrollLeft=v.scrollWidth;v.scrollTop=v.scrollHeight;return v.scrollLeft>0&&v.scrollTop>0;})()"),'Zoomed map must remain reachable with native scrolling');
   await click("#reset-camera");assert.equal(await evaluate("document.querySelector('#knowledge-network').dataset.zoom"),"1.00");
   await evaluate("document.querySelector('#network-viewport').focus({preventScroll:true})");
-  const beforeKeyboard=await orientation();await key("ArrowRight","ArrowRight",39);assert.notEqual(await orientation(),beforeKeyboard);
+  const beforeKeyboard=await pan();await key("ArrowRight","ArrowRight",39);assert.notEqual(await pan(),beforeKeyboard);
   const box=await evaluate("(()=>{const r=document.querySelector('#network-viewport').getBoundingClientRect();return {x:r.x+15,y:r.y+30}})()");
-  const beforeDrag=await orientation();
+  const beforeDrag=await pan();
   await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:box.x,y:box.y});
   await send("Input.dispatchMouseEvent",{type:"mousePressed",x:box.x,y:box.y,button:"left",clickCount:1});
   await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:box.x+80,y:box.y+30,button:"left",buttons:1});
   await send("Input.dispatchMouseEvent",{type:"mouseReleased",x:box.x+80,y:box.y+30,button:"left",clickCount:1});
-  assert.notEqual(await orientation(),beforeDrag,"Dragging should rotate the scene");
+  assert.notEqual(await pan(),beforeDrag,"Dragging should pan the map");
   assert.equal(await level(),"01 / CONCEPTS","Dragging must not open a node");
   await click("#reset-camera");
 
@@ -279,8 +299,8 @@ async function main() {
   assert.ok(await evaluate("matchMedia('(prefers-reduced-motion:reduce)').matches&&getComputedStyle(document.documentElement).scrollBehavior==='auto'"));
   await evaluate("document.querySelector('#network-viewport').scrollIntoView({behavior:'instant',block:'center'});document.activeElement.blur()");
   await send("Input.dispatchMouseEvent",{type:"mouseMoved",x:2,y:2});
-  const reduced=await orientation();await wait(200);assert.equal(await orientation(),reduced);
-  assert.ok(await evaluate("document.querySelector('#toggle-rotation').disabled&&document.querySelector('#knowledge-network').dataset.rotating==='false'"));
+  const reduced=await pan();await wait(200);assert.equal(await pan(),reduced);
+  assert.ok(await evaluate("document.querySelector('#knowledge-network').getAnimations({subtree:true}).length===0"),"Reduced motion should disable map transitions");
   const layouts=[];
   for(const [width,height] of [[375,844],[390,844],[768,900],[844,390],[1024,900],[1440,900]]) {
     await metrics(width,height);
@@ -297,27 +317,62 @@ async function main() {
   await click('.adjacency-title[data-map-id="orderbook"]');
   await screenshot("mobile-topics","#network");
   await click('[data-network-view="graph"]');
-  assert.ok(await evaluate("(()=>{const v=document.querySelector('#network-viewport');return !v.hidden&&v.scrollWidth===v.clientWidth&&document.querySelectorAll('.sphere-node').length===5;})()"),"Phone sphere must fit its own panel");
+  assert.ok(await evaluate("(()=>{const v=document.querySelector('#network-viewport');return !v.hidden&&v.scrollWidth===v.clientWidth&&document.querySelectorAll('.map-node').length===5;})()"),"Phone map must fit its own panel");
   await click("#zoom-in");assert.ok(await evaluate("Number(document.querySelector('#knowledge-network').dataset.zoom)>1"));
-  await screenshot("mobile-sphere-topics","#network-viewport");
+  for(let i=0;i<4;i++)await click('#zoom-in');
+  assert.ok(await evaluate("(()=>{const v=document.querySelector('#network-viewport');v.scrollLeft=v.scrollWidth;v.scrollTop=v.scrollHeight;return v.scrollLeft>0&&v.scrollTop>0;})()"),'Zoomed phone map must remain reachable with native scrolling');
+  await click('#reset-camera');
+  await screenshot("mobile-map-topics","#network-viewport");
   await readableLabels('Phone learning topics');
   await pointerActivate('orderbook:0');
   assert.ok(await evaluate("(()=>{const r=document.querySelector('#topic-focus').getBoundingClientRect(),header=document.querySelector('.site-header').getBoundingClientRect();return !document.querySelector('#topic-focus').hidden&&r.top>=header.bottom&&r.bottom<innerHeight;})()"),'Phone topic activation should reveal its detail below the header');
   await screenshot('mobile-topic-detail','#skill-detail');
-  await click("#reset-network");await screenshot("mobile-sphere-concepts","#network-viewport");
+  await click("#reset-network");await screenshot("mobile-map-concepts","#network-viewport");
   await readableLabels('Phone concepts');
-  for(let turn=0;turn<6;turn++) {
-    await click('[data-rotate=".24,0"]');
-    await readableLabels('Phone rotated '+turn);
-  }
+  await evaluate("document.querySelector('#network-viewport').scrollTop=300");
+  assert.ok(await evaluate("document.querySelector('#network-viewport').scrollTop>0"),"Long phone maps should scroll vertically");
   await pointerActivate('workflow');assert.equal(await level(),'02 / MODULES','Phone labels should receive real pointer clicks');
   await send("Page.navigate",{url:origin+"/?role=quant-dev&skill=cpp"});await ready();
   assert.equal(await evaluate("document.querySelector('#path-role').value"),"cpp-systems","Old role bookmarks should resolve");
   assert.equal(await level(),"04 / LEARNING TOPICS");
   await send("Page.navigate",{url:origin+"/?role=__proto__&domain=__proto__&module=toString&skill=toString"});await ready();
   assert.equal(await level(),"01 / CONCEPTS");assert.equal(await evaluate("document.querySelector('#selection-kicker').textContent"),"ALL ROLES");
+  // Readability must hold across all content, not just the order-book example.
+  const allContentLayouts=[];
+  for(const width of [375,1440]) {
+    await metrics(width,900);
+    const result=await evaluate(`(async()=>{
+      document.querySelector('#reset-network').click();
+      document.querySelector('[data-network-view="graph"]').click();
+      const issues=[];let scopes=0,nodes=0;
+      const frame=()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      const check=async()=>{
+        await frame();scopes++;
+        for(const card of document.querySelectorAll('.map-node-content')) {
+          nodes++;
+          if(card.scrollHeight>card.clientHeight+1||card.scrollWidth>card.clientWidth+1)issues.push(card.querySelector('strong').textContent);
+        }
+      };
+      const open=(kind,id)=>document.querySelector('.map-node[data-node-kind="'+kind+'"][data-node-id="'+id+'"]').dispatchEvent(new MouseEvent('click',{bubbles:true}));
+      await check();
+      for(const domain of window.ATLAS_DATA.domains) {
+        document.querySelector('#reset-network').click();open('domain',domain.id);await check();
+        for(const module of domain.modules) {
+          open('module',module.id);await check();
+          for(const id of module.skillIds) {
+            open('skill',id);await check();document.querySelector('#map-back').click();
+          }
+          document.querySelector('#map-back').click();
+        }
+      }
+      return {scopes,nodes,issues};
+    })()`);
+    assert.deepEqual(result.issues,[],"Every map title must fit at "+width+"px");
+    assert.equal(result.scopes,1+data.domains.length+data.domains.reduce((sum,d)=>sum+d.modules.length,0)+data.skills.length);
+    allContentLayouts.push({width,...result});
+  }
   assert.deepEqual(browserErrors,[],"Browser JavaScript and local resource errors");
-  console.log(JSON.stringify({desktop:initial,hierarchy:"four levels, breadcrumbs, browser back/forward",sphere:"automatic rotation, pause, keyboard, real pointer clicks, drag, zoom, readable labels",prerequisiteSkills:closure.size,progressV1ReloadExportImport:"passed",searchAndJd:"passed",layouts,reducedMotion:"passed",browserErrors,screenshots},null,2));
+  console.log(JSON.stringify({desktop:initial,hierarchy:"four levels, breadcrumbs, browser back/forward",map:"dependency focus, keyboard, real pointer clicks, pan, zoom, scroll, readable nodes",prerequisiteSkills:closure.size,progressV1ReloadExportImport:"passed",searchAndJd:"passed",layouts,allContentLayouts,reducedMotion:"passed",browserErrors,screenshots},null,2));
 }
 main().catch((error) => { console.error(error.stack || error.message); process.exitCode = 1; }).finally(async () => {
   if (socket) socket.close();

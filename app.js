@@ -7,7 +7,7 @@
   const moduleById = Object.fromEntries(domains.flatMap(domain=>domain.modules).map(module=>[module.id,module]));
   const colors = Object.fromEntries(Object.entries(layers).map(([key, value]) => [key, value.color]));
   let activeGroup = "all", activeLayer = "all", activeRoleId = null, searchQuery = "", showOnlyUnstarted = false;
-  let networkLayer = "all", sphere;
+  let networkLayer = "all", knowledgeMap;
   let selectedSkillId = null, pathRoleId = "cpp-systems", pathChoices = {}, traceDependencies = false, traceSkillId = null;
   let networkView = matchMedia('(max-width:760px)').matches ? "list" : "graph", mapPath = {domainId:null,moduleId:null,skillId:null};
   const progressKey = "career-skill-atlas-progress-v1";
@@ -170,8 +170,9 @@
     $("#network-list").hidden=view!=="list";
     $(".graph-pan").hidden=view!=="graph";
     $("#zoom-in").disabled=view!=="graph"; $("#zoom-out").disabled=view!=="graph";
-    $("#toggle-rotation").hidden=view!=="graph";
-    sphere.setVisible(view==="graph");
+    $('#toggle-relations').hidden=view!=="graph";
+    if(view==='list')$('#map-context').textContent='点击条目逐层展开，前置关系列在对应条目下';
+    knowledgeMap.setVisible(view==="graph");
     $$("[data-network-view]").forEach((button) => button.setAttribute("aria-pressed",String(button.dataset.networkView===view)));
   }
   function collectPrerequisites(seeds) {
@@ -202,10 +203,10 @@
       const items=$$('#skill-detail-content .topic-list li');
       items.forEach((item,index)=>item.classList.toggle('is-current-topic',index===topic));
       const focus=$('#topic-focus');focus.hidden=false;focus.textContent='当前内容：'+node.title;
-      $$('.sphere-node').forEach(el=>{const selected=el.dataset.nodeId===node.id;el.classList.toggle('is-focused',selected);el.setAttribute('aria-pressed',String(selected));});
+      $$('.map-node').forEach(el=>{const selected=el.dataset.nodeId===node.id;el.classList.toggle('is-focused',selected);el.setAttribute('aria-pressed',String(selected));});
       $$('.adjacency-title[data-map-kind="topic"]').forEach(el=>el.setAttribute('aria-pressed',String(el.dataset.mapId===node.id)));
       $('#skill-detail-title').focus({preventScroll:true});
-      if(matchMedia('(max-width:900px)').matches)$('#skill-detail').scrollIntoView({behavior:motion(),block:'start'});
+      if(matchMedia('(max-width:960px)').matches)$('#skill-detail').scrollIntoView({behavior:motion(),block:'start'});
     } else navigateMap(node.kind,node.id);
   }
   function navigateMap(kind,id,focus=true) {
@@ -271,17 +272,17 @@
     const edges=[...edgeMap.values()];
     $('#network-level-title').textContent=heading;
     $('#network-level-kicker').textContent=level;
-    $('#network-level-description').textContent=skill?'点击一个内容节点，在详情面板查看学习范围、前置项与验证成果。':module?module.summary:domain?domain.summary:'每个球面节点是一块大知识范围。选一个概念，展开下一层。';
+    $('#network-level-description').textContent=skill?'点击一个内容节点，在详情面板查看学习范围、前置项与验证成果。':module?module.summary:domain?domain.summary:'先建立共同底座，再连接系统，最后选择应用方向。点击任意概念，逐层展开。';
     const crumbs=[['root','', '知识总览'],...(domain?[['domain',domain.id,domain.shortTitle||domain.title]]:[]),...(module?[['module',module.id,module.title]]:[]),...(skill?[['skill',skill.id,skill.title]]:[])];
     $('#network-breadcrumbs').innerHTML='<ol>'+crumbs.map(([kind,id,label],index)=>'<li><button type="button" data-map-kind="'+kind+'" data-map-id="'+id+'"'+(index===crumbs.length-1?' aria-current="page"':'')+'>'+esc(label)+'</button></li>').join('')+'</ol>';
     bindMapButtons($('#network-breadcrumbs'));
     $('#map-back').disabled=!domain;
     $('#network-empty').hidden=nodes.length>0;
     const key=[mapPath.domainId,mapPath.moduleId,mapPath.skillId,networkLayer,activeRoleId,traceDependencies].join('/');
-    sphere.setScene(nodes,edges,key);
+    knowledgeMap.setScene(nodes,edges,key);
     renderNetworkList(nodes,edges);setNetworkView(networkView);
     $('#network-summary').textContent=nodes.length+' 个'+(skill?'学习内容':module?'技能':domain?'模块':'大概念')+(activeRoleId?' · '+roleById[activeRoleId].title:' · 个人学习主线')+(traceDependencies?' · '+skillById[traceSkillId].title+'的前置链':'');
-    $('#network-viewport').setAttribute('aria-label',heading+'，可旋转的 3D 球状知识地图');
+    $('#network-viewport').setAttribute('aria-label',heading+'，可交互的分层知识地图');
     $('#network-list').setAttribute('aria-label',heading+'，逐层知识清单');
     $("#trace-dependencies").disabled=!(selectedSkillId||traceSkillId);
     $("#trace-dependencies").textContent=traceDependencies?'退出前置链':'查看所选技能前置链';
@@ -308,11 +309,7 @@
     button.textContent = showOnlyUnstarted ? "显示全部" : "只看待学";
   }
   function init() {
-    sphere=new window.AtlasSphere({viewport:$('#network-viewport'),svg:$('#knowledge-network'),onActivate:activateMapNode,onMotionChange:({paused,reduced})=>{
-      const button=$('#toggle-rotation');button.disabled=reduced;
-      button.textContent=reduced?'已减少动态效果':paused?'开始自动旋转':'暂停自动旋转';
-      button.setAttribute('aria-pressed',String(paused||reduced));
-    }});
+    knowledgeMap=new window.AtlasMap({viewport:$('#network-viewport'),svg:$('#knowledge-network'),onActivate:activateMapNode});
     $("#stat-roles").textContent=roles.length;
     $("#stat-skills").textContent=skills.length;
     $("#stat-edges").textContent=skills.reduce((sum,skill)=>sum+skill.prerequisites.length,0);
@@ -352,18 +349,21 @@
     $$(".layer-tab").forEach((button)=>button.addEventListener("click",()=>{activeLayer=button.dataset.layer;$$(".layer-tab").forEach((item)=>{item.classList.toggle("is-active",item===button);item.setAttribute("aria-pressed",String(item===button));});renderSkills();}));
     $("#progress-filter").addEventListener("click",()=>{showOnlyUnstarted=!showOnlyUnstarted;updateProgressCount();renderSkills();});
     $("#network-layer").addEventListener("change",(event)=>{networkLayer=event.target.value;navigateMap('root',null,false);});
-    $("#zoom-in").addEventListener("click",()=>sphere.zoom(.12));
-    $("#zoom-out").addEventListener("click",()=>sphere.zoom(-.12));
+    $("#zoom-in").addEventListener("click",()=>knowledgeMap.zoom(.15));
+    $("#zoom-out").addEventListener("click",()=>knowledgeMap.zoom(-.15));
     $("#reset-network").addEventListener("click",()=>{
       networkLayer="all";activeRoleId=null;selectedSkillId=null;traceSkillId=null;traceDependencies=false;
-      $("#network-layer").value="all";sphere.reset();renderRoles();renderRolePanel(null);navigateMap('root',null,false);
+      $("#network-layer").value="all";knowledgeMap.reset();renderRoles();renderRolePanel(null);navigateMap('root',null,false);
     });
     $('#map-back').addEventListener('click',()=>{
       if(mapPath.skillId)navigateMap('module',mapPath.moduleId);
       else if(mapPath.moduleId)navigateMap('domain',mapPath.domainId);
       else navigateMap('root');
     });
-    $('#toggle-rotation').addEventListener('click',()=>sphere.setPaused(!sphere.paused));
+    $('#toggle-relations').addEventListener('click',()=>{
+      knowledgeMap.setRelations(!knowledgeMap.showAll);
+      $('#toggle-relations').setAttribute('aria-pressed',String(knowledgeMap.showAll));
+    });
     $('#clear-map-filter').addEventListener('click',()=>{$('#reset-network').click();});
     $("#trace-dependencies").addEventListener("click",()=>{
       traceDependencies=!traceDependencies;
@@ -373,8 +373,7 @@
     $$("[data-network-view]").forEach((button) => button.addEventListener("click",()=>{setNetworkView(button.dataset.networkView);}));
     $("#path-role").addEventListener("change",(event)=>selectRole(event.target.value));
     $("#jd-role-filter").addEventListener("change",renderEvidence);
-    $$('[data-rotate]').forEach(button=>button.addEventListener('click',()=>sphere.rotate(...button.dataset.rotate.split(',').map(Number))));
-    $('#reset-camera').addEventListener('click',()=>sphere.reset());
+    $('#reset-camera').addEventListener('click',()=>knowledgeMap.reset());
     $("#export-progress").addEventListener("click",()=>{
       const blob=new Blob([JSON.stringify({version:1,exportedAt:new Date().toISOString(),skills:progress},null,2)],{type:"application/json"});
       const url=URL.createObjectURL(blob), link=document.createElement("a");
